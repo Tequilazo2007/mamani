@@ -1,31 +1,30 @@
-﻿
 
-        // Capturador de errores global para depuraciÃ³n
+        // Capturador de errores global para depuración
         window.onerror = function (msg, url, lineNo, columnNo, error) {
             var message = [
                 'Mensaje: ' + msg,
-                'LÃ­nea: ' + lineNo,
+                'Línea: ' + lineNo,
                 'Columna: ' + columnNo,
                 'Detalle: ' + (error ? error.stack : 'No disponible')
             ].join('\n');
-            alert("Â¡SE DETECTÃ“ UN ERROR EN EL JUEGO!\n\n" + message);
+            alert("¡SE DETECTÓ UN ERROR EN EL JUEGO!\n\n" + message);
             return false;
         };
 
         /* ==========================================================================
-           SISTEMA DE AUDIO â€” Web Audio API
+           SISTEMA DE AUDIO — Web Audio API
            Genera todos los sonidos proceduralmente. Sin archivos externos.
            ========================================================================== */
         const sistemaAudio = {
             ctx: null,
             volumenMusica: 0.35,
             volumenSFX: 0.55,
-            silenciado: true, // Silenciado por defecto a peticiÃ³n de usuario
+            silenciado: true, // Silenciado por defecto a petición de usuario
             _nodosMusicaActual: [],   // osciladores / fuentes activos del tema en loop
-            _gainMusicaActual: null,  // GainNode de la mÃºsica activa
+            _gainMusicaActual: null,  // GainNode de la música activa
             _estadoMusicaActual: null,
 
-            // â”€â”€ InicializaciÃ³n (debe llamarse tras un gesto del usuario) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Inicialización (debe llamarse tras un gesto del usuario) ───────────
             inicializar() {
                 if (this.ctx) return;
                 try {
@@ -35,7 +34,7 @@
                 }
             },
 
-            // â”€â”€ Silenciar / activar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Silenciar / activar ───────────────────────────────────────────────
             toggleMute() {
                 this.silenciado = !this.silenciado;
                 if (this._gainMusicaActual) {
@@ -46,7 +45,7 @@
                 }
             },
 
-            // â”€â”€ Detener mÃºsica actual con fade-out â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Detener música actual con fade-out ────────────────────────────────
             _detenerMusica(durFade = 0.4) {
                 if (!this._gainMusicaActual) return;
                 const g = this._gainMusicaActual;
@@ -59,7 +58,7 @@
                 this._gainMusicaActual = null;
             },
 
-            // â”€â”€ Reproducir tema segÃºn estado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Reproducir tema según estado ──────────────────────────────────────
             reproducirMusica(estado) {
                 if (!this.ctx) return;
                 if (this._estadoMusicaActual === estado) return; // ya suena
@@ -67,20 +66,20 @@
                 this._detenerMusica(0.5);
                 if (this.silenciado) return;
                 setTimeout(() => {
-                    if (this._estadoMusicaActual !== estado) return; // cambiÃ³ antes del fade
+                    if (this._estadoMusicaActual !== estado) return; // cambió antes del fade
                     const fn = this._temas[estado];
                     if (fn) fn.call(this);
                 }, 500);
             },
 
-            // â”€â”€ Tocar un SFX de una vez â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Tocar un SFX de una vez ───────────────────────────────────────────
             sfx(nombre) {
                 if (!this.ctx || this.silenciado) return;
                 const fn = this._sfx[nombre];
                 if (fn) fn.call(this);
             },
 
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ──────────────────────────────────────────────────────────────────────
             // UTILIDAD: crea un oscilador simple con envelope
             _osc(freq, type, atk, sus, rel, vol, dest, inicio) {
                 const t = inicio !== undefined ? inicio : this.ctx.currentTime;
@@ -99,12 +98,12 @@
                 return osc;
             },
 
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            // TEMAS DE MÃšSICA (loops procedurales)
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ──────────────────────────────────────────────────────────────────────
+            // TEMAS DE MÚSICA (loops procedurales)
+            // ──────────────────────────────────────────────────────────────────────
             _temas: {
 
-                // â”€â”€ MENÃš PRINCIPAL: Ã©pico andino, lento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── MENÚ PRINCIPAL: épico andino, lento ──────────────────────────
                 MENU() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -134,7 +133,7 @@
                             osc.stop(t + i * durNota + durNota + 0.05);
                             nodos.push(osc);
 
-                            // Bajo armÃ³nico
+                            // Bajo armónico
                             const bajo = c.createOscillator();
                             bajo.type = 'triangle';
                             bajo.frequency.setValueAtTime(f / 2, t + i * durNota);
@@ -154,7 +153,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ MAPA: exploraciÃ³n tranquila, flauta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── MAPA: exploración tranquila, flauta ──────────────────────────
                 MAPA() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -192,7 +191,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ COMBATE: rÃ­tmico y tenso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── COMBATE: rítmico y tenso ─────────────────────────────────────
                 COMBATE() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -205,9 +204,9 @@
                     const beat = 60 / bpm;
                     let t = c.currentTime;
 
-                    // PatrÃ³n de percusiÃ³n grave (kick)
+                    // Patrón de percusión grave (kick)
                     const patronKick = [1, 0, 0, 0, 1, 0, 0, 0];
-                    // MelodÃ­a tensa
+                    // Melodía tensa
                     const melodia = [110, 0, 130.81, 0, 146.83, 123.47, 0, 110];
 
                     function ciclo() {
@@ -226,7 +225,7 @@
                                 osc.start(t + i * beat); osc.stop(t + i * beat + 0.25);
                                 nodos.push(osc);
                             }
-                            // MelodÃ­a
+                            // Melodía
                             if (melodia[i] > 0) {
                                 const osc2 = c.createOscillator();
                                 osc2.type = 'sawtooth';
@@ -246,7 +245,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ TIENDA: alegre y misterioso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── TIENDA: alegre y misterioso ──────────────────────────────────
                 TIENDA() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -279,7 +278,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ CAMPAMENTO: paz y descanso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── CAMPAMENTO: paz y descanso ───────────────────────────────────
                 CAMPAMENTO() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -313,7 +312,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ EVENTO: misterioso y tenso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── EVENTO: misterioso y tenso ───────────────────────────────────
                 EVENTO() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -356,7 +355,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ CUTSCENE: ambiental, Ã©pico lento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── CUTSCENE: ambiental, épico lento ─────────────────────────────
                 CUTSCENE() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -390,7 +389,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ TUTORIAL: amigable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── TUTORIAL: amigable ───────────────────────────────────────────
                 TUTORIAL() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -423,10 +422,10 @@
                     ciclo();
                 },
 
-                // â”€â”€ TUTORIAL COMPLETO: triunfal breve â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── TUTORIAL COMPLETO: triunfal breve ────────────────────────────
                 TUTORIAL_COMPLETO() { sistemaAudio._temas.MAPA.call(this); },
 
-                // â”€â”€ RECOMPENSA: brillante â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── RECOMPENSA: brillante ────────────────────────────────────────
                 RECOMPENSA() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -459,7 +458,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ VICTORIA: fanfarria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── VICTORIA: fanfarria ──────────────────────────────────────────
                 VICTORIA() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -493,7 +492,7 @@
                     ciclo();
                 },
 
-                // â”€â”€ GAME OVER: triste â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── GAME OVER: triste ────────────────────────────────────────────
                 GAMEOVER() {
                     const c = sistemaAudio.ctx;
                     const masterGain = c.createGain();
@@ -527,12 +526,12 @@
                 }
             },
 
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ──────────────────────────────────────────────────────────────────────
             // EFECTOS DE SONIDO (SFX)
-            // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ──────────────────────────────────────────────────────────────────────
             _sfx: {
 
-                // â”€â”€ Botones UI / MenÃº â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Botones UI / Menú ─────────────────────────────────────────────
                 hover() {
                     sistemaAudio._osc(880, 'sine', 0.01, 0.02, 0.04, 0.15);
                 },
@@ -561,7 +560,7 @@
                     sistemaAudio._osc(392, 'sine', 0.01, 0.03, 0.12, 0.2, null, t + 0.09);
                 },
 
-                // â”€â”€ Combate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Combate ───────────────────────────────────────────────────────
                 ataque() {
                     const c = sistemaAudio.ctx;
                     const t = c.currentTime;
@@ -648,7 +647,7 @@
                     osc.start(t); osc.stop(t + 0.32);
                 },
 
-                // â”€â”€ Mapa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Mapa ──────────────────────────────────────────────────────────
                 nodoSeleccionar() {
                     const c = sistemaAudio.ctx;
                     const t = c.currentTime;
@@ -687,7 +686,7 @@
                     sistemaAudio._osc(392, 'sine', 0.02, 0.06, 0.25, 0.22, null, t + 0.1);
                 },
 
-                // â”€â”€ Tienda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Tienda ────────────────────────────────────────────────────────
                 compra() {
                     const c = sistemaAudio.ctx;
                     const t = c.currentTime;
@@ -702,7 +701,7 @@
                     sistemaAudio._osc(140, 'square', 0.005, 0.06, 0.06, 0.28, null, t + 0.08);
                 },
 
-                // â”€â”€ Campamento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Campamento ────────────────────────────────────────────────────
                 descanso() {
                     const c = sistemaAudio.ctx;
                     const t = c.currentTime;
@@ -718,7 +717,7 @@
                     });
                 },
 
-                // â”€â”€ Evento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Evento ────────────────────────────────────────────────────────
                 eleccion() {
                     const c = sistemaAudio.ctx;
                     sistemaAudio._osc(440, 'triangle', 0.01, 0.04, 0.12, 0.25, null, c.currentTime);
@@ -738,7 +737,7 @@
                     sistemaAudio._osc(277, 'sawtooth', 0.01, 0.06, 0.2, 0.28, null, t + 0.16);
                 },
 
-                // â”€â”€ Recompensa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Recompensa ────────────────────────────────────────────────────
                 recompensa() {
                     const c = sistemaAudio.ctx;
                     const t = c.currentTime;
@@ -747,9 +746,9 @@
                     });
                 },
 
-                // â”€â”€ Mute toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Mute toggle ───────────────────────────────────────────────────
                 mute() {
-                    // No sonido al mutear (por diseÃ±o)
+                    // No sonido al mutear (por diseño)
                 }
             }
         };
@@ -781,7 +780,7 @@
         }
         const menuUi = document.getElementById('menu-ui');
 
-        // MÃ¡quina de estados para controlar quÃ© pantalla dibujar
+        // Máquina de estados para controlar qué pantalla dibujar
         const ESTADOS = {
             MENU: 'MENU',
             CUTSCENE: 'CUTSCENE',
@@ -799,13 +798,13 @@
         };
 
         // ==========================================
-        // CONFIGURACIÃ“N CENTRALIZADA DE COORDENADAS DE UI (ESCALABLE)
+        // CONFIGURACIÓN CENTRALIZADA DE COORDENADAS DE UI (ESCALABLE)
         // ==========================================
         const UI_CONFIG = {
             // Cartas en mano (combate y tutorial) - Layout plano horizontal centrado
             mano: {
                 xInicial: 79,   // centrado: (480 - 5*54 - 4*5) / 2 = 79
-                yBase: 200,     // posiciÃ³n Y base (parte inferior, quieta)
+                yBase: 200,     // posición Y base (parte inferior, quieta)
                 ancho: 54,      // ancho de cada carta
                 alto: 62,       // alto de cada carta
                 espacio: 5      // espacio entre cartas
@@ -865,7 +864,7 @@
         let confirmacionActual = null;
 
         /* ==========================================================================
-           SISTEMA DE TOAST â€” Notificaciones in-canvas sin popups del navegador
+           SISTEMA DE TOAST — Notificaciones in-canvas sin popups del navegador
            ========================================================================== */
         function mostrarToast(texto, subtexto, tipo) {
             // tipo: 'info' | 'compra' | 'error' | 'especial'
@@ -877,11 +876,11 @@
             };
         }
 
-        // â”€â”€ BotÃ³n de Mute â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Botón de Mute ─────────────────────────────────────────────────────────
         const MUTE_BTN = { x: 460, y: 255, w: 18, h: 12 };
 
         function dibujarBotonMute() {
-            if (estadoActual === ESTADOS.MENU) return; // No lo mostramos en el menÃº HTML
+            if (estadoActual === ESTADOS.MENU) return; // No lo mostramos en el menú HTML
             const b = MUTE_BTN;
             const hover = esCursorSobreBoton(b.x, b.y, b.w, b.h);
 
@@ -898,7 +897,7 @@
             ctx.fillStyle = sistemaAudio.silenciado ? "#e74c3c" : "#2ecc71";
             ctx.font = "7px Arial";
             ctx.textAlign = "center";
-            ctx.fillText(sistemaAudio.silenciado ? "ðŸ”‡" : "ðŸ”Š", b.x + b.w / 2, b.y + b.h - 2);
+            ctx.fillText(sistemaAudio.silenciado ? "🔇" : "🔊", b.x + b.w / 2, b.y + b.h - 2);
             ctx.textAlign = "left";
 
             if (hover) canvas.style.cursor = "pointer";
@@ -911,11 +910,11 @@
                 return;
             }
 
-            // Calcular opacidad (fade out en el Ãºltimo 0.5s)
+            // Calcular opacidad (fade out en el último 0.5s)
             const restante = toastActual.expira - Date.now();
             const opacidad = Math.min(1, restante / 400);
 
-            // Colores segÃºn tipo
+            // Colores según tipo
             const colores = {
                 info: { fondo: "rgba(20, 50, 80, ", borde: "#4db6f5", titulo: "#7dd3fc" },
                 compra: { fondo: "rgba(15, 60, 25, ", borde: "#4ade80", titulo: "#86efac" },
@@ -963,7 +962,7 @@
         }
 
         /* ==========================================================================
-           SISTEMA DE CONFIRMACIÃ“N IN-CANVAS â€” Reemplaza confirm() del navegador
+           SISTEMA DE CONFIRMACIÓN IN-CANVAS — Reemplaza confirm() del navegador
            ========================================================================== */
         function mostrarConfirmacion(titulo, subtexto, cbAceptar, cbCancelar) {
             confirmacionActual = { titulo: titulo, subtexto: subtexto, cbAceptar: cbAceptar, cbCancelar: cbCancelar };
@@ -976,7 +975,7 @@
             ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
             ctx.fillRect(0, 0, 480, 270);
 
-            // Caja del diÃ¡logo
+            // Caja del diálogo
             const dw = 280, dh = 100;
             const dx = (480 - dw) / 2;
             const dy = (270 - dh) / 2;
@@ -990,7 +989,7 @@
             ctx.fill();
             ctx.stroke();
 
-            // TÃ­tulo
+            // Título
             ctx.fillStyle = "#fde68a";
             ctx.font = "6.5px 'Press Start 2P'";
             ctx.textAlign = "center";
@@ -1001,7 +1000,7 @@
             ctx.font = "4.5px 'Press Start 2P'";
             ctx.fillText(confirmacionActual.subtexto, 240, dy + 42);
 
-            // BotÃ³n ACEPTAR
+            // Botón ACEPTAR
             const btnAx = dx + 18, btnAy = dy + 58, btnAw = 110, btnAh = 26;
             const hoverA = (mouseX >= btnAx && mouseX <= btnAx + btnAw && mouseY >= btnAy && mouseY <= btnAy + btnAh);
             let drawAy = btnAy;
@@ -1022,7 +1021,7 @@
             ctx.font = "5px 'Press Start 2P'";
             ctx.fillText("ACEPTAR", btnAx + btnAw / 2, drawAy + 16);
 
-            // BotÃ³n CANCELAR
+            // Botón CANCELAR
             const btnCx = dx + dw - 128, btnCy = dy + 58, btnCw = 110, btnCh = 26;
             const hoverC = (mouseX >= btnCx && mouseX <= btnCx + btnCw && mouseY >= btnCy && mouseY <= btnCy + btnCh);
             let drawCy = btnCy;
@@ -1048,7 +1047,7 @@
         /* ==========================================================================
            5.1. VARIABLES DE CUTSCENE (Intro Narrativa)
            ========================================================================== */
-        // â”€â”€ CinemÃ¡tica de TransiciÃ³n Acto 1 â†’ 2 (Valles y Minas de PotosÃ­) â”€â”€
+        // ── Cinemática de Transición Acto 1 → 2 (Valles y Minas de Potosí) ──
         const imgCineActo2_1Base64 = "img/cine_acto2_1.jpg";
         const imgCineActo2_2Base64 = "img/cine_acto2_2.jpg";
         const imgCineActo2_3Base64 = "img/cine_acto2_3.jpg";
@@ -1064,14 +1063,14 @@
             },
             {
                 titulo: "El Llamado",
-                texto: "TÃº eres MAMANI, un joven guerrero de los Andes. La Senda te llama. Solo tÃº puedes atravesar la Amazonia, los Socavones de Potosi y el Salar Cosmico.",
+                texto: "Tú eres MAMANI, un joven guerrero de los Andes. La Senda te llama. Solo tú puedes atravesar la Amazonia, los Socavones de Potosi y el Salar Cosmico.",
                 colorFondo1: "#2c1c00",
                 colorFondo2: "#5c3d1e",
                 acento: "#f39c12",
                 imgKey: "cine_intro_2"
             },
             {
-                titulo: "Tu MisiÃ³n",
+                titulo: "Tu Misión",
                 texto: "Usa tus cartas de combate, gestiona tu Energia y derrota a los tres Guardianes Corrompidos. La Pachamama espera a su heroe.",
                 colorFondo1: "#0a0a2a",
                 colorFondo2: "#1a1a5c",
@@ -1081,18 +1080,18 @@
         ];
 
         let cutsceneSlideActual = 0;        // Slide actual (0-2)
-        let cutsceneCharIndex = 0;          // CuÃ¡ntos caracteres del texto se han revelado
+        let cutsceneCharIndex = 0;          // Cuántos caracteres del texto se han revelado
         let cutsceneTimer = 0;              // Timestamp para controlar velocidad del typewriter
-        let cutsceneTitiloVisible = false;  // Si el tÃ­tulo ya fue revelado
-        let cutsceneTituloIndex = 0;        // Caracteres del tÃ­tulo revelados
+        let cutsceneTitiloVisible = false;  // Si el título ya fue revelado
+        let cutsceneTituloIndex = 0;        // Caracteres del título revelados
         const TYPEWRITER_VELOCIDAD = 30;    // ms por caracter
         let cutsceneUltimoTick = 0;
 
-        // â”€â”€ CatÃ¡logo de cinemÃ¡ticas de transiciÃ³n entre Actos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Catálogo de cinemáticas de transición entre Actos ────────────────────────
         const CUTSCENE_SLIDES_ACTO2 = [
             {
-                titulo: "El AdiÃ³s a la Selva",
-                texto: "Con el Jichi en paz, las aguas vuelven a su cauce. Una vibraciÃ³n helada desciende de las cumbres... El camino de Mamani ahora asciende hacia el cielo.",
+                titulo: "El Adiós a la Selva",
+                texto: "Con el Jichi en paz, las aguas vuelven a su cauce. Una vibración helada desciende de las cumbres... El camino de Mamani ahora asciende hacia el cielo.",
                 colorFondo1: "#1a3020",
                 colorFondo2: "#2a4a1a",
                 acento: "#e67e22",
@@ -1100,15 +1099,15 @@
             },
             {
                 titulo: "El Gigante de Plata",
-                texto: "Ante Ã©l se alza el Cerro Rico de PotosÃ­, una colosal montaÃ±a que ha devorado miles de almas. El aire es escaso y la tierra sangra plata.",
+                texto: "Ante él se alza el Cerro Rico de Potosí, una colosal montaña que ha devorado miles de almas. El aire es escaso y la tierra sangra plata.",
                 colorFondo1: "#1a0a00",
                 colorFondo2: "#3d1a00",
                 acento: "#c0392b",
                 imgKey: "cine_acto2_2"
             },
             {
-                titulo: "La Sombra del SocavÃ³n",
-                texto: "En la oscuridad del socavÃ³n, el metal brilla con codicia maldita. El TÃ­o de la Mina vigila cada paso, esperando su ofrenda... o su prÃ³ximo sacrificio.",
+                titulo: "La Sombra del Socavón",
+                texto: "En la oscuridad del socavón, el metal brilla con codicia maldita. El Tío de la Mina vigila cada paso, esperando su ofrenda... o su próximo sacrificio.",
                 colorFondo1: "#0a0a0a",
                 colorFondo2: "#1a0505",
                 acento: "#8e44ad",
@@ -1116,11 +1115,11 @@
             }
         ];
 
-        // â”€â”€ CinemÃ¡tica de TransiciÃ³n Acto 2 â†’ 3 (Altiplano y Salar de Uyuni) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Cinemática de Transición Acto 2 → 3 (Altiplano y Salar de Uyuni) ───────────
         const CUTSCENE_SLIDES_ACTO3 = [
             {
                 titulo: "Plata y Sangre",
-                texto: "La mina ha cobrado su tributo, pero Mamani ha sobrevivido. Deja atrÃ¡s el polvo rojo de PotosÃ­ y sus lamentos, buscando purificar su espÃ­ritu en las alturas infinitas del Altiplano.",
+                texto: "La mina ha cobrado su tributo, pero Mamani ha sobrevivido. Deja atrás el polvo rojo de Potosí y sus lamentos, buscando purificar su espíritu en las alturas infinitas del Altiplano.",
                 colorFondo1: "#1a0005",
                 colorFondo2: "#3d0010",
                 acento: "#8e44ad",
@@ -1128,7 +1127,7 @@
             },
             {
                 titulo: "El Cielo en la Tierra",
-                texto: "Un horizonte blanco y cegador le da la bienvenida. El Salar de Uyuni es un inmenso espejo donde la tierra y los cielos se unen. AquÃ­, en el techo del mundo, aguarda su destino final.",
+                texto: "Un horizonte blanco y cegador le da la bienvenida. El Salar de Uyuni es un inmenso espejo donde la tierra y los cielos se unen. Aquí, en el techo del mundo, aguarda su destino final.",
                 colorFondo1: "#0a1a2a",
                 colorFondo2: "#152a3a",
                 acento: "#f1c40f",
@@ -1136,7 +1135,7 @@
             }
         ];
 
-        // Callback que se ejecuta al terminar una cinemÃ¡tica de transiciÃ³n (null = flujo normal)
+        // Callback que se ejecuta al terminar una cinemática de transición (null = flujo normal)
         let cutsceneOnEnd = null;
 
         /* ==========================================================================
@@ -1144,25 +1143,25 @@
            ========================================================================== */
         /*
          * Tipos de paso:
-         *  INFO   â†’ Panel informativo central, auto-avanza (toca para saltar)
-         *  ACCION â†’ El jugador DEBE hacer algo (spotlight activo, input restringido)
-         *  MISION â†’ Pantalla dramÃ¡tica de misiÃ³n (auto-avanza)
-         *  LIBRE  â†’ Combate sin restricciones hasta matar al enemigo
+         *  INFO   → Panel informativo central, auto-avanza (toca para saltar)
+         *  ACCION → El jugador DEBE hacer algo (spotlight activo, input restringido)
+         *  MISION → Pantalla dramática de misión (auto-avanza)
+         *  LIBRE  → Combate sin restricciones hasta matar al enemigo
          */
         const TUTORIAL_PASOS = [
-            // â”€â”€ Paso 0: Bienvenida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 0: Bienvenida ──────────────────────────────────────────────
             {
                 id: 0, tipo: "INFO", duracion: 4000,
                 color: "#2ecc71",
-                titulo: "Â¡BIENVENIDO, MAMANI!",
+                titulo: "¡BIENVENIDO, MAMANI!",
                 lineas: [
                     "Este tutorial te ensena a combatir.",
                     "Sigue las instrucciones paso a paso.",
-                    "Â¡Toca para continuar cuando quieras!"
+                    "¡Toca para continuar cuando quieras!"
                 ],
                 spotlight: null, accion: "AUTO"
             },
-            // â”€â”€ Paso 1: Explicar EnergÃ­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 1: Explicar Energía ────────────────────────────────────────
             {
                 id: 1, tipo: "INFO", duracion: 4500,
                 color: "#f39c12",
@@ -1175,7 +1174,7 @@
                 spotlight: { x: 330, y: 6, w: 95, h: 28 },
                 accion: "AUTO"
             },
-            // â”€â”€ Paso 2: Jugar carta ROJA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 2: Jugar carta ROJA ────────────────────────────────────────
             {
                 id: 2, tipo: "ACCION",
                 color: "#e74c3c",
@@ -1188,19 +1187,19 @@
                 spotlight: { x: 75, y: 196, w: 62, h: 70 },
                 accion: "JUGAR_OFENSIVA"
             },
-            // â”€â”€ Paso 3: Explicar resultado del ataque â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 3: Explicar resultado del ataque ───────────────────────────
             {
                 id: 3, tipo: "INFO", duracion: 4000,
                 color: "#e74c3c",
-                titulo: "Â¡ATACASTE!",
+                titulo: "¡ATACASTE!",
                 lineas: [
-                    "Â¡El Machete Zafrero golpeo al Quirquincho!",
+                    "¡El Machete Zafrero golpeo al Quirquincho!",
                     "Tu AP bajo de 3 a 2 gemas.",
                     "Aun tienes 2 AP para mas cartas."
                 ],
                 spotlight: null, accion: "AUTO"
             },
-            // â”€â”€ Paso 4: Jugar carta AZUL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 4: Jugar carta AZUL ────────────────────────────────────────
             {
                 id: 4, tipo: "ACCION",
                 color: "#3498db",
@@ -1213,11 +1212,11 @@
                 spotlight: { x: 134, y: 196, w: 62, h: 70 },
                 accion: "JUGAR_DEFENSIVA"
             },
-            // â”€â”€ Paso 5: Explicar resultado de defensa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 5: Explicar resultado de defensa ───────────────────────────
             {
                 id: 5, tipo: "INFO", duracion: 4000,
                 color: "#3498db",
-                titulo: "Â¡ESCUDO ACTIVADO!",
+                titulo: "¡ESCUDO ACTIVADO!",
                 lineas: [
                     "El Bloqueo azul aparece en tu barra de HP.",
                     "Absorbe el dano del proximo ataque.",
@@ -1225,7 +1224,7 @@
                 ],
                 spotlight: null, accion: "AUTO"
             },
-            // â”€â”€ Paso 6: Terminar Turno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 6: Terminar Turno ──────────────────────────────────────────
             {
                 id: 6, tipo: "ACCION",
                 color: "#e67e22",
@@ -1233,45 +1232,45 @@
                 lineas: [
                     "Presiona el boton TERMINAR TURNO.",
                     "El enemigo actuara, pero tu Bloqueo",
-                    "lo absorbera. Â¡Hazlo ahora!"
+                    "lo absorbera. ¡Hazlo ahora!"
                 ],
                 spotlight: { x: 399, y: 204, w: 72, h: 34 },
                 accion: "TERMINAR_TURNO"
             },
-            // â”€â”€ Paso 7: El enemigo atacÃ³, AP restaurado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 7: El enemigo atacó, AP restaurado ─────────────────────────
             {
                 id: 7, tipo: "INFO", duracion: 4000,
                 color: "#9b59b6",
                 titulo: "TURNO DEL ENEMIGO",
                 lineas: [
-                    "Â¡El Quirquincho ataco! Tu Bloqueo absorbio",
+                    "¡El Quirquincho ataco! Tu Bloqueo absorbio",
                     "el golpe. Ahora es tu turno de nuevo.",
                     "Tu AP se restauro a 3 gemas."
                 ],
                 spotlight: null, accion: "AUTO"
             },
-            // â”€â”€ Paso 8: MISIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 8: MISIÓN ──────────────────────────────────────────────────
             {
                 id: 8, tipo: "MISION", duracion: 4500,
                 color: "#e74c3c",
                 titulo: "MISION",
                 lineas: [
-                    "Â¡DERROTA AL QUIRQUINCHO!",
+                    "¡DERROTA AL QUIRQUINCHO!",
                     "Usa tus cartas para vaciar su HP.",
                     "Recuerda terminar el turno si te quedas",
-                    "sin AP. Â¡El AP se restaura cada turno!"
+                    "sin AP. ¡El AP se restaura cada turno!"
                 ],
                 spotlight: null, accion: "AUTO"
             },
-            // â”€â”€ Paso 9: LIBRE â€” matar al enemigo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Paso 9: LIBRE — matar al enemigo ───────────────────────────────
             {
                 id: 9, tipo: "LIBRE",
                 color: "#ffcc00",
-                titulo: "Â¡COMBATE LIBRE!",
+                titulo: "¡COMBATE LIBRE!",
                 lineas: [
-                    "Â¡Usa tus cartas y derrota al Quirquincho!",
+                    "¡Usa tus cartas y derrota al Quirquincho!",
                     "Termina el turno si se te acaba el AP.",
-                    "Â¡La Pachamama te observa!"
+                    "¡La Pachamama te observa!"
                 ],
                 spotlight: null, accion: "DERROTAR_ENEMIGO"
             }
@@ -1280,42 +1279,42 @@
         let tutorialPasoActual = 0;
         let tutorialAutoTimer = null;
         let tutorialFlechaAnim = 0;
-        let tutorialCompletado = localStorage.getItem('sendaMamani_tutorial') === 'true'; // true si ya completÃ³ el tutorial antes
+        let tutorialCompletado = localStorage.getItem('sendaMamani_tutorial') === 'true'; // true si ya completó el tutorial antes
         let enModoTutorial = false;
         let tutorialAutoStart = 0;       // Timestamp de inicio del paso AUTO actual
 
-        let estadoActual = ESTADOS.MENU; // El juego inicia siempre en el menÃº principal
+        let estadoActual = ESTADOS.MENU; // El juego inicia siempre en el menú principal
         let tiempoMisionCombate = 0; // Temporizador para el banner de inicio de combate
         let modoLeyenda = false;
         let viajesCompletados = parseInt(localStorage.getItem('sendaMamani_viajesCompletados') || '0');
 
-        // Variables de la mÃ¡quina de escribir de la victoria total
+        // Variables de la máquina de escribir de la victoria total
         let textoVictoriaIndex = 0;
         let ultimoTickTextoVictoria = 0;
         const TEXTO_VICTORIA_NORMAL =
             "Tras una batalla legendaria en el Salar Cosmico, Mamani logra purificar la esencia de Huiracocha.\n\n" +
             "Los tres biomas sagrados vuelven a respirar paz y la Pachamama sonrie bendiciendo los Andes bolivianos.\n\n" +
-            "Â¡Felicidades, Guerrero! Has completado La Senda de Mamani.\n\n" +
+            "¡Felicidades, Guerrero! Has completado La Senda de Mamani.\n\n" +
             "Intenta ahora la Senda de Leyenda (NG+) para un verdadero desafio.";
 
         const TEXTO_VICTORIA_LEYENDA =
             "La Senda de Leyenda ha sido conquistada. Huiracocha cae liberado de su corrupcion cosmica definitiva.\n\n" +
             "Mamani ha demostrado el verdadero coraje andino, superando todos los limites inimaginables.\n\n" +
             "Pero... en los confines del horizonte, una nueva grieta temporal se abre en el Titicaca...\n\n" +
-            "Â¿Que nuevas amenazas aguardan?\n\n" +
+            "¿Que nuevas amenazas aguardan?\n\n" +
             "LA SENDA DE MAMANI 2 - CONTINUARA...";
 
         function obtenerFactorDificultad() {
             if (modoLeyenda) return 1.30; // Modo Leyenda tiene dificultad fija (+30%)
             return 1.0 + (viajesCompletados * 0.10); // +10% por cada viaje normal completado
         }
-        let cartaSeleccionadaIndex = null; // Ãndice de la carta actualmente SELECCIONADA (primer toque)
+        let cartaSeleccionadaIndex = null; // Índice de la carta actualmente SELECCIONADA (primer toque)
 
         // Variables de control de La Pascana (Campamento)
         let campamentoAccionRealizada = false;
         let estrellasCampamento = [];
 
-        // Coordenadas lÃ³gicas del cursor del mouse y validador de hover
+        // Coordenadas lógicas del cursor del mouse y validador de hover
         let mouseX = -100;
         let mouseY = -100;
 
@@ -1331,14 +1330,14 @@
 
         // ==========================================
         // POOL DE CARTAS DE RECOMPENSA
-        // Cartas temÃ¡ticas andinas que el jugador puede ganar al vencer enemigos.
+        // Cartas temáticas andinas que el jugador puede ganar al vencer enemigos.
         // Las elementales solo aparecen si actoActual >= 2.
         // ==========================================
         const POOL_CARTAS_RECOMPENSA = [
             // OFENSIVAS
-            { nombre: "Chicotazo", costoAP: 1, daÃ±o: 70, tipo: "Ofensiva", categoria: "ofensiva", descripcion: "18 daÃ±o. Golpe veloz." },
-            { nombre: "Patada Andina", costoAP: 2, daÃ±o: 100, tipo: "Ofensiva", categoria: "ofensiva", descripcion: "25 daÃ±o. Golpe brutal." },
-            { nombre: "Fuerza del CÃ³ndor", costoAP: 1, daÃ±o: 55, tipo: "Ofensiva", categoria: "ofensiva", efecto: "Sangrado", descripcion: "14 daÃ±o + Sangrado." }
+            { nombre: "Chicotazo", costoAP: 1, daño: 70, tipo: "Ofensiva", categoria: "ofensiva", descripcion: "18 daño. Golpe veloz." },
+            { nombre: "Patada Andina", costoAP: 2, daño: 100, tipo: "Ofensiva", categoria: "ofensiva", descripcion: "25 daño. Golpe brutal." },
+            { nombre: "Fuerza del Cóndor", costoAP: 1, daño: 55, tipo: "Ofensiva", categoria: "ofensiva", efecto: "Sangrado", descripcion: "14 daño + Sangrado." }
             , { nombre: "Mal de Ojo", costoAP: 1, tipo: "Nerfeo", categoria: "nerfeo", efecto: "DEBILITAR", valor: 0, cooldown: 2, descripcion: "Debilita: -5 ATK enemigo." }
         ];
 
@@ -1353,26 +1352,26 @@
 
         // Cartas especiales de recompensa de Jefe
         const CARTAS_RECOMPENSA_JEFE_ACTO1 = [
-            { nombre: "Torrente Jichi", costoAP: 2, daÃ±o: 35, tipo: "Elemental (Agua)", categoria: "elemental", efecto: "EMPAPADO", valor: 0, cooldown: 2, descripcion: "35 daÃ±o. Aplica Empapado." },
+            { nombre: "Torrente Jichi", costoAP: 2, daño: 35, tipo: "Elemental (Agua)", categoria: "elemental", efecto: "EMPAPADO", valor: 0, cooldown: 2, descripcion: "35 daño. Aplica Empapado." },
             { nombre: "Escudo Titicaca", costoAP: 2, bloqueo: 32, tipo: "Defensiva", categoria: "defensiva", efecto: null, valor: 0, descripcion: "Gran Escudo sagrado. +32 Bloqueo." },
-            { nombre: "Fuerza del Jichi", costoAP: 2, daÃ±o: 45, tipo: "Ofensiva", categoria: "ofensiva", efecto: "SANGRADO", valor: 5, descripcion: "45 daÃ±o. Aplica Sangrado." }
+            { nombre: "Fuerza del Jichi", costoAP: 2, daño: 45, tipo: "Ofensiva", categoria: "ofensiva", efecto: "SANGRADO", valor: 5, descripcion: "45 daño. Aplica Sangrado." }
         ];
 
         const CARTAS_RECOMPENSA_JEFE_ACTO2 = [
-            { nombre: "Poder Pachamama", costoAP: 2, daÃ±o: 60, tipo: "Elemental (Tierra)", categoria: "elemental", efecto: null, valor: 0, descripcion: "ExplosiÃ³n ancestral. Hace 60 daÃ±o." },
-            { nombre: "Chakana Eterna", costoAP: 2, bloqueo: 45, tipo: "Defensiva", categoria: "defensiva", efecto: null, valor: 0, descripcion: "ProtecciÃ³n divina. +45 Bloqueo." },
-            { nombre: "Coca Ancestral", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "EnergÃ­a andina. +2 AP este turno." }
+            { nombre: "Poder Pachamama", costoAP: 2, daño: 60, tipo: "Elemental (Tierra)", categoria: "elemental", efecto: null, valor: 0, descripcion: "Explosión ancestral. Hace 60 daño." },
+            { nombre: "Chakana Eterna", costoAP: 2, bloqueo: 45, tipo: "Defensiva", categoria: "defensiva", efecto: null, valor: 0, descripcion: "Protección divina. +45 Bloqueo." },
+            { nombre: "Coca Ancestral", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "Energía andina. +2 AP este turno." }
         ];
 
-        // DefiniciÃ³n de las cartas base que tiene el jugador
+        // Definición de las cartas base que tiene el jugador
         const CARTAS_BASE = {
             ofensiva: {
                 nombre: "Machete Zafrero",
                 costoAP: 1,
-                daÃ±o: 50, // Corregido el daÃ±o a 50 para alinearse con su descripciÃ³n
+                daño: 50, // Corregido el daño a 50 para alinearse con su descripción
                 tipo: "Ofensiva",
-                efecto: "Sangrado", // Hace 3 de daÃ±o por turno
-                descripcion: "12 daÃ±o fÃ­sico. Aplica Sangrado."
+                efecto: "Sangrado", // Hace 3 de daño por turno
+                descripcion: "12 daño físico. Aplica Sangrado."
             },
             defensiva: {
                 nombre: "Escudo de Cuero",
@@ -1397,21 +1396,21 @@
             hpMax: 100,
             hp: 100, // Vida actual
             apMax: 3,
-            ap: 3,   // Puntos de AcciÃ³n para usar cartas en el turno
+            ap: 3,   // Puntos de Acción para usar cartas en el turno
             inventario: [], // Items consumibles (Mochila general)
             slotsCombate: [null, null, null], // Items equipados para combate
             coleccionCartas: [{ ...CARTAS_BASE.ofensiva }, { ...CARTAS_BASE.defensiva }], // Todas las cartas poseidas
-            oro: 100, // Monedas para comprar en la tienda del Callawaya (modificado para inicio rÃ¡pido en Acto 2)
+            oro: 100, // Monedas para comprar en la tienda del Callawaya (modificado para inicio rápido en Acto 2)
             escudo: 0, // Puntos de defensa acumulados en el turno
 
-            // Sistema de mano fija de 5 categorÃ­as
+            // Sistema de mano fija de 5 categorías
             // Al inicio solo Ofensiva + Defensiva desbloqueadas; el resto se compra en la Tienda
             mano: {
-                ofensiva: { ...CARTAS_BASE.ofensiva },    // âœ“ Desbloqueada desde el inicio
-                defensiva: { ...CARTAS_BASE.defensiva },   // âœ“ Desbloqueada desde el inicio
-                elemental: null,   // ðŸ”’ Bloqueada - desbloquear en Tienda
-                mejora: null,      // ðŸ”’ Bloqueada - desbloquear en Tienda
-                nerfeo: null       // ðŸ”’ Bloqueada - desbloquear en Tienda
+                ofensiva: { ...CARTAS_BASE.ofensiva },    // ✓ Desbloqueada desde el inicio
+                defensiva: { ...CARTAS_BASE.defensiva },   // ✓ Desbloqueada desde el inicio
+                elemental: null,   // 🔒 Bloqueada - desbloquear en Tienda
+                mejora: null,      // 🔒 Bloqueada - desbloquear en Tienda
+                nerfeo: null       // 🔒 Bloqueada - desbloquear en Tienda
             },
 
             // Espacio para guardar las reliquias activas (ej. La Chakana Eterna)
@@ -1419,12 +1418,12 @@
 
             // Sistema de buffs por niveles (Honkai-inspired)
             pasivas: { vitalidad: 0, energia: 0, defensa: 0, fuerza: 0 },
-            danioBonus: 0,   // DaÃ±o fijo adicional (buff de Fuerza)
+            danioBonus: 0,   // Daño fijo adicional (buff de Fuerza)
             bloqueoBase: 0,  // Escudo adicional al inicio de combate (buff de Defensa)
 
-            // MÃ©todo para reiniciar los puntos de acciÃ³n al comenzar un turno
+            // Método para reiniciar los puntos de acción al comenzar un turno
             restaurarAP() {
-                // Senda de Leyenda (modo leyenda) tiene una penalizaciÃ³n de -1 en el AP inicial y mÃ¡ximo restaurado
+                // Senda de Leyenda (modo leyenda) tiene una penalización de -1 en el AP inicial y máximo restaurado
                 if (modoLeyenda) {
                     this.ap = Math.max(2, this.apMax - 1);
                 } else {
@@ -1434,7 +1433,7 @@
         };
 
         // Objeto global que representa al enemigo activo en el combate
-        // Rastrea el bioma actual (1: AmazonÃ­a, 2: Minas, 3: Salar CÃ³smico)
+        // Rastrea el bioma actual (1: Amazonía, 2: Minas, 3: Salar Cósmico)
         let actoActual = 1;
 
         // Objeto global del enemigo activo
@@ -1451,7 +1450,7 @@
                 descripcion: "Preparando ataque de 10 DMG"
             },
 
-            // FunciÃ³n para cambiar los datos del enemigo segÃºn el acto y tipo de nodo
+            // Función para cambiar los datos del enemigo según el acto y tipo de nodo
             configurarEnemigo(tipoCombate) {
                 this.estado = null; // Limpiamos estados al iniciar el combate
                 this.faseActual = 1; // Fase inicial
@@ -1459,31 +1458,31 @@
 
                 if (tipoCombate === "JEFE") {
                     if (actoActual === 1) {
-                        // Jefe del Acto 1: El Jichi (AmazonÃ­a)
+                        // Jefe del Acto 1: El Jichi (Amazonía)
                         this.nombre = "El Jichi";
                         this.hpMax = Math.round(240 * factor);
                         this.hp = this.hpMax;
                         this.defensa = 0.0;
-                        this.intencion = { tipo: "ATAQUE", valor: Math.round(12 * factor), descripcion: "InundaciÃ³n: " + Math.round(12 * factor) + " DMG" };
+                        this.intencion = { tipo: "ATAQUE", valor: Math.round(12 * factor), descripcion: "Inundación: " + Math.round(12 * factor) + " DMG" };
                     }
                     else if (actoActual === 2) {
-                        // Jefe del Acto 2: El TÃ­o (Valles y Minas)
-                        this.nombre = "El TÃ­o de la Mina";
+                        // Jefe del Acto 2: El Tío (Valles y Minas)
+                        this.nombre = "El Tío de la Mina";
                         this.hpMax = Math.round(350 * factor);
                         this.hp = this.hpMax;
                         this.defensa = 0.15;
                         this.intencion = { tipo: "ATAQUE", valor: Math.round(16 * factor), descripcion: "Llamarada: " + Math.round(16 * factor) + " DMG" };
                     }
                     else if (actoActual === 3) {
-                        // Jefe Final del Acto 3: Huiracocha (Salar CÃ³smico)
+                        // Jefe Final del Acto 3: Huiracocha (Salar Cósmico)
                         this.nombre = "Huiracocha";
                         this.hpMax = Math.round(850 * factor);
                         this.hp = this.hpMax;
                         this.defensa = 0.40;
-                        this.intencion = { tipo: "ATAQUE", valor: Math.round(25 * factor), descripcion: "Ira CÃ³smica: " + Math.round(25 * factor) + " DMG" };
+                        this.intencion = { tipo: "ATAQUE", valor: Math.round(25 * factor), descripcion: "Ira Cósmica: " + Math.round(25 * factor) + " DMG" };
                     }
                 } else {
-                    // Cargar enemigo normal segÃºn el Acto actual
+                    // Cargar enemigo normal según el Acto actual
                     let rnd = Math.random();
                     if (actoActual >= 2 && rnd < 0.15) {
                         this.nombre = "Kari Kari";
@@ -1499,7 +1498,7 @@
                         this.intencion = { tipo: "QUEMADURA", valor: Math.round(11 * factor), descripcion: "Fuego: " + Math.round(11 * factor) + " DMG" };
 
                     } else if (actoActual === 1) {
-                        // Acto 1: 3 mini-bosses asignados a nodos especÃ­ficos
+                        // Acto 1: 3 mini-bosses asignados a nodos específicos
                         const nodoIdx = nodoActualIndex || 1;
                         if (nodoIdx === 1) {
                             // Combate 1: El Mapinguari
@@ -1525,7 +1524,7 @@
                         }
                     }
                     else if (actoActual === 2) {
-                        // Acto 2: 3 mini-bosses asignados a nodos especÃ­ficos
+                        // Acto 2: 3 mini-bosses asignados a nodos específicos
                         const nodoIdx = nodoActualIndex || 1;
                         if (nodoIdx === 1) {
                             this.nombre = "Quirquincho Minero";
@@ -1560,19 +1559,19 @@
                         }
                     }
                     else {
-                        // Acto 3 (Salar CÃ³smico y posteriores)
+                        // Acto 3 (Salar Cósmico y posteriores)
                         this.nombre = "Quirquincho Acorazado Ancestral";
                         this.hpMax = Math.round(160 * factor);
                         this.hp = this.hpMax;
                         this.defensa = 0.55; // 55% defensa
-                        this.intencion = { tipo: "ATAQUE", valor: Math.round(15 * factor), descripcion: "Giro de CaparazÃ³n: " + Math.round(15 * factor) + " DMG" };
+                        this.intencion = { tipo: "ATAQUE", valor: Math.round(15 * factor), descripcion: "Giro de Caparazón: " + Math.round(15 * factor) + " DMG" };
                     }
                 }
 
                 // NUEVO: En modo Senda de Leyenda (NG+), los enemigos empiezan con 15 de escudo gratis
                 if (modoLeyenda) {
                     this.escudo = 15;
-                    console.log("Â¡Senda de Leyenda! El enemigo comienza con 15 de Escudo.");
+                    console.log("¡Senda de Leyenda! El enemigo comienza con 15 de Escudo.");
                 } else {
                     this.escudo = 0;
                 }
@@ -1580,14 +1579,14 @@
 
             definirSiguienteMovimiento() {
                 const factor = obtenerFactorDificultad();
-                let multFase = (this.faseActual === 2) ? 1.6 : 1.0; // 60% mÃ¡s daÃ±o en fase 2
+                let multFase = (this.faseActual === 2) ? 1.6 : 1.0; // 60% más daño en fase 2
                 if (this.nombre === "Quirquincho de Entrenamiento") {
                     this.intencion = { tipo: "ATAQUE", valor: 25, descripcion: "Ataque pesado: 25 DMG" };
                 }
                 else if (this.nombre.includes("El Jichi")) {
                     const acciones = [
-                        { tipo: "ATAQUE", valor: Math.round(12 * multFase), descripcion: "InundaciÃ³n: " + Math.round(12 * multFase) + " DMG" },
-                        { tipo: "MALDICION", valor: 0, descripcion: "ConstricciÃ³n: Te debilita" }
+                        { tipo: "ATAQUE", valor: Math.round(12 * multFase), descripcion: "Inundación: " + Math.round(12 * multFase) + " DMG" },
+                        { tipo: "MALDICION", valor: 0, descripcion: "Constricción: Te debilita" }
                     ];
                     this.intencion = acciones[Math.floor(Math.random() * acciones.length)];
                 }
@@ -1627,7 +1626,7 @@
                     const acciones = [
                         { tipo: "ROBO_SANGRE", valor: Math.round(11 * factor), descripcion: "Robo de Grasa: " + Math.round(11 * factor) + " DMG" },
                         { tipo: "ATAQUE", valor: Math.round(14 * factor), descripcion: "Cuchillazo: " + Math.round(14 * factor) + " DMG" },
-                        { tipo: "DEFENSA", valor: 12, descripcion: "Campana SombrÃ­a: +12 Escudo" }
+                        { tipo: "DEFENSA", valor: 12, descripcion: "Campana Sombría: +12 Escudo" }
                     ];
                     this.intencion = acciones[Math.floor(Math.random() * acciones.length)];
                 }
@@ -1647,16 +1646,16 @@
                     ];
                     this.intencion = acciones[Math.floor(Math.random() * acciones.length)];
                 }
-                else if (this.nombre.includes("El TÃ­o de la Mina")) {
+                else if (this.nombre.includes("El Tío de la Mina")) {
                     const acciones = [
                         { tipo: "ATAQUE", valor: Math.round(16 * multFase), descripcion: "Llamarada: " + Math.round(16 * multFase) + " DMG" },
-                        { tipo: "DEFENSA", valor: Math.round(20 * multFase), descripcion: "Pared de CarbÃ³n: +" + Math.round(20 * multFase) + " Escudo" }
+                        { tipo: "DEFENSA", valor: Math.round(20 * multFase), descripcion: "Pared de Carbón: +" + Math.round(20 * multFase) + " Escudo" }
                     ];
                     this.intencion = acciones[Math.floor(Math.random() * acciones.length)];
                 }
                 else if (this.nombre.includes("Huiracocha")) {
                     const acciones = [
-                        { tipo: "ATAQUE", valor: Math.round(25 * multFase), descripcion: "Ira CÃ³smica: " + Math.round(25 * multFase) + " DMG" },
+                        { tipo: "ATAQUE", valor: Math.round(25 * multFase), descripcion: "Ira Cósmica: " + Math.round(25 * multFase) + " DMG" },
                         { tipo: "DEFENSA", valor: Math.round(40 * multFase), descripcion: "Poder Solar: +" + Math.round(40 * multFase) + " Escudo" },
                         { tipo: "MALDICION", valor: 0, descripcion: "Juicio Divino: Debilitamiento" }
                     ];
@@ -1664,7 +1663,7 @@
                 }
                 else {
                     const acciones = [
-                        { tipo: "ATAQUE", valor: 10, descripcion: "Ataque fÃ­sico de 10" },
+                        { tipo: "ATAQUE", valor: 10, descripcion: "Ataque físico de 10" },
                         { tipo: "DEFENSA", valor: 15, descripcion: "Se enrosca: +15 Escudo" } // Sincronizado para usar Escudo real
                     ];
                     this.intencion = acciones[Math.floor(Math.random() * acciones.length)];
@@ -1693,7 +1692,7 @@
             ondaChoque: null      // { x, y, radio, maxRadio, vida, color }
         };
 
-        // Datos de configuraciÃ³n por tipo de carta
+        // Datos de configuración por tipo de carta
         const ANIM_CONFIG = {
             ofensiva: {
                 proyectilColor: '#ffffff',
@@ -1759,11 +1758,11 @@
             if (opciones.cat) animaciones[objetivo].cat = opciones.cat;
 
             if (tipo === 'ataque') {
-                // Iniciar secuencia faseada: anticip â†’ avance â†’ impacto â†’ retroceso
+                // Iniciar secuencia faseada: anticip → avance → impacto → retroceso
                 animaciones[objetivo].fase = 'anticip';
                 animaciones[objetivo].faseTick = 0;
                 animaciones[objetivo].inclinacion = (objetivo === 'jugador') ? -0.18 : 0.18;
-                // El proyectil se lanzarÃ¡ desde la fase 'avance'
+                // El proyectil se lanzará desde la fase 'avance'
                 animaciones[objetivo]._pendingProyectil = { cat, objetivo };
 
             } else if (tipo === 'dano') {
@@ -1781,11 +1780,11 @@
 
             } else if (tipo === 'escudo') {
                 animaciones[objetivo].shieldFlash = 45;
-                // Efecto de aura de escudo â€” onda suave azul/verde
+                // Efecto de aura de escudo — onda suave azul/verde
                 const cfg = ANIM_CONFIG[cat] || ANIM_CONFIG.defensiva;
                 const cx = (objetivo === 'jugador') ? 80 : 390;
                 animaciones.ondaChoque = { x: cx, y: 155, radio: 8, maxRadio: 55, vida: 30, maxVida: 30, color: cfg.ondaColor };
-                // PartÃ­culas de escudo flotando hacia arriba
+                // Partículas de escudo flotando hacia arriba
                 for (let i = 0; i < 10; i++) {
                     animaciones.particulas.push({
                         x: cx + (Math.random() * 50 - 25),
@@ -1819,7 +1818,7 @@
             const x0 = (objetivo === 'jugador') ? 115 : 340;
             const y0 = 150;
 
-            // Destino: mejora va a la boca de Mamani (auto-curaciÃ³n)
+            // Destino: mejora va a la boca de Mamani (auto-curación)
             let x1, y1;
             if (cat === 'mejora') {
                 x1 = 80;  // boca de Mamani
@@ -1907,8 +1906,8 @@
             const FASES_JUGADOR = [
                 { nombre: 'anticip', duracion: 8 },   // Se prepara, retrocede ligeramente
                 { nombre: 'avance', duracion: 12 },  // Dash hacia adelante
-                { nombre: 'impacto', duracion: 10 },  // Golpe en el punto mÃ¡s adelante
-                { nombre: 'retorno', duracion: 18 }   // Vuelve suavemente a su posiciÃ³n
+                { nombre: 'impacto', duracion: 10 },  // Golpe en el punto más adelante
+                { nombre: 'retorno', duracion: 18 }   // Vuelve suavemente a su posición
             ];
 
             ['jugador', 'enemigo'].forEach(obj => {
@@ -1922,7 +1921,7 @@
                     const faseIdx = FASES_JUGADOR.findIndex(f => f.nombre === a.fase);
 
                     if (a.fase === 'anticip') {
-                        // Retroceso leve + compresiÃ³n vertical (agacharse)
+                        // Retroceso leve + compresión vertical (agacharse)
                         const t = a.faseTick / faseActual.duracion;
                         a.atkOffset = dir * (-12) * Math.sin(t * Math.PI);
                         a.escalaY = 1 - 0.08 * Math.sin(t * Math.PI);
@@ -1935,7 +1934,7 @@
 
                     } else if (a.fase === 'avance') {
                         const t = a.faseTick / faseActual.duracion;
-                        // Easing: aceleraciÃ³n fuerte al inicio
+                        // Easing: aceleración fuerte al inicio
                         const ease = 1 - (1 - t) * (1 - t);
                         a.atkOffset = dir * 45 * ease;
                         a.escalaY = 1 + 0.06 * Math.sin(t * Math.PI);
@@ -1967,7 +1966,7 @@
                     if (a.poseTimer <= 0) { a.pose = null; a.cat = null; }
                 }
 
-                // Temblor de daÃ±o
+                // Temblor de daño
                 if (a.hitShake > 0) {
                     a.hitShake -= 0.5;
                     if (a.hitShake < 0) a.hitShake = 0;
@@ -1995,7 +1994,7 @@
                 if (animaciones.hitSparks[i].vida <= 0) animaciones.hitSparks.splice(i, 1);
             }
 
-            // --- PartÃ­culas ---
+            // --- Partículas ---
             for (let i = animaciones.particulas.length - 1; i >= 0; i--) {
                 const p = animaciones.particulas[i];
                 p.x += p.vx;
@@ -2038,7 +2037,7 @@
                 ctx.beginPath();
                 ctx.arc(o.x, o.y, o.radio, 0, Math.PI * 2);
                 ctx.stroke();
-                // Segunda onda mÃ¡s grande y tenue
+                // Segunda onda más grande y tenue
                 ctx.lineWidth = 1;
                 ctx.globalAlpha = alfa * 0.3;
                 ctx.beginPath();
@@ -2119,7 +2118,7 @@
 
                 } else if (p.tipo === 'defensiva') {
 
-                    // Orbe de escudo â€” cÃ­rculo con brillo
+                    // Orbe de escudo — círculo con brillo
                     const r = 7;
                     const grad = ctx.createRadialGradient(0, 0, 1, 0, 0, r);
                     grad.addColorStop(0, '#ffffff');
@@ -2140,7 +2139,7 @@
                     ctx.stroke();
 
                 } else if (p.tipo === 'elemental') {
-                    // Bola de energÃ­a elemental con anillo giratorio
+                    // Bola de energía elemental con anillo giratorio
                     const r = 8;
                     const grad = ctx.createRadialGradient(0, 0, 1, 0, 0, r);
                     grad.addColorStop(0, '#ffffff');
@@ -2271,7 +2270,7 @@
                     ctx.lineTo(Math.cos(ang) * len1, Math.sin(ang) * len1);
                     ctx.stroke();
                 }
-                // NÃºcleo del spark
+                // Núcleo del spark
                 const gradCore = ctx.createRadialGradient(0, 0, 0, 0, 0, 7 * scale);
                 gradCore.addColorStop(0, '#ffffff');
                 gradCore.addColorStop(0.5, s.tipo.sparkColor2);
@@ -2283,7 +2282,7 @@
                 ctx.restore();
             });
 
-            // --- PartÃ­culas ---
+            // --- Partículas ---
             animaciones.particulas.forEach(p => {
                 const alfa = p.vida / p.maxVida;
                 ctx.save();
@@ -2321,49 +2320,49 @@
         }
 
         // ==========================================
-        // SISTEMA DE NODOS DEL MAPA â€” DINÃMICO POR ACTO
+        // SISTEMA DE NODOS DEL MAPA — DINÁMICO POR ACTO
         // ==========================================
-        // Cada acto tiene su propio mapa con nodos, ciudades y conexiones Ãºnicos.
+        // Cada acto tiene su propio mapa con nodos, ciudades y conexiones únicos.
         // Al pasar de acto, reiniciarMapaParaNuevoActo() carga el array correspondiente.
 
         const NODOS_POR_ACTO = {
-            // â”€â”€ ACTO 1: AMAZONÃA (Pando â†’ Beni â†’ Santa Cruz) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 1: AMAZONÍA (Pando → Beni → Santa Cruz) ─────────────────────────
             1: [
                 { id: 0, x: 98, y: 59, tipo: "INICIO", ciudad: "Cobija", label: "INICIO", completado: true, disponible: false, conexiones: [1, 5] },
                 { id: 1, x: 167, y: 70, tipo: "COMBATE", ciudad: "Puerto Rico", label: "COMBATE", completado: false, disponible: true, conexiones: [2] },
                 { id: 2, x: 247, y: 84, tipo: "CAMPAMENTO", ciudad: "Riberalta", label: "CAMPAMENTO", completado: false, disponible: false, conexiones: [3] },
                 { id: 3, x: 278, y: 114, tipo: "EVENTO", ciudad: "Beni Norte", label: "EVENTO", completado: false, disponible: false, conexiones: [4] },
                 { id: 4, x: 240, y: 143, tipo: "TIENDA", ciudad: "Trinidad", label: "TIENDA", completado: false, disponible: false, conexiones: [8] },
-                { id: 5, x: 113, y: 131, tipo: "TIENDA", ciudad: "GuayaramerÃ­n", label: "TIENDA", completado: false, disponible: true, conexiones: [6] },
+                { id: 5, x: 113, y: 131, tipo: "TIENDA", ciudad: "Guayaramerín", label: "TIENDA", completado: false, disponible: true, conexiones: [6] },
                 { id: 6, x: 89, y: 190, tipo: "CAMPAMENTO", ciudad: "Bajo Guaya", label: "CAMPAMENTO", completado: false, disponible: false, conexiones: [7] },
-                { id: 7, x: 177, y: 213, tipo: "EVENTO", ciudad: "RÃ­o ItÃ©nez", label: "EVENTO", completado: false, disponible: false, conexiones: [12] },
+                { id: 7, x: 177, y: 213, tipo: "EVENTO", ciudad: "Río Iténez", label: "EVENTO", completado: false, disponible: false, conexiones: [12] },
                 { id: 8, x: 281, y: 178, tipo: "COMBATE", ciudad: "Loreto", label: "COMBATE", completado: false, disponible: false, conexiones: [10] },
-                { id: 9, x: 313, y: 226, tipo: "CAMPAMENTO", ciudad: "ConcepciÃ³n", label: "CAMPAMENTO", completado: false, disponible: false, conexiones: [7] },
+                { id: 9, x: 313, y: 226, tipo: "CAMPAMENTO", ciudad: "Concepción", label: "CAMPAMENTO", completado: false, disponible: false, conexiones: [7] },
                 { id: 10, x: 339, y: 187, tipo: "COMBATE", ciudad: "San Ignacio", label: "COMBATE", completado: false, disponible: false, conexiones: [11] },
                 { id: 11, x: 399, y: 219, tipo: "EVENTO", ciudad: "Samaipata", label: "EVENTO", completado: false, disponible: false, conexiones: [9] },
                 { id: 12, x: 53, y: 206, tipo: "JEFE", ciudad: "El Jichi", label: "JEFE", completado: false, disponible: false, conexiones: [] }
             ],
 
-            // â”€â”€ ACTO 2: VALLES Y MINAS DE POTOSÃ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            // Ruta Norte (lenta/segura): Cochabamba â†’ Tarata â†’ Mizque â†’ Aiquile â†’ Sucre
-            // Ruta Sur (rÃ¡pida/peligrosa): Cochabamba â†’ Quillacollo â†’ Camargo â†’ Tupiza
-            // Convergencia: PotosÃ­ â†’ El TÃ­o de la Mina (Jefe)
+            // ── ACTO 2: VALLES Y MINAS DE POTOSÍ ─────────────────────────────────────
+            // Ruta Norte (lenta/segura): Cochabamba → Tarata → Mizque → Aiquile → Sucre
+            // Ruta Sur (rápida/peligrosa): Cochabamba → Quillacollo → Camargo → Tupiza
+            // Convergencia: Potosí → El Tío de la Mina (Jefe)
             2: [
                 { id: 0, x: 105, y: 55, tipo: "INICIO", ciudad: "Cochabamba", label: "INICIO", completado: true, disponible: false, conexiones: [1, 4] },
                 { id: 1, x: 242, y: 50, tipo: "COMBATE", ciudad: "Camino Cbba", label: "COMBATE", completado: false, disponible: true, conexiones: [2] },
                 { id: 2, x: 360, y: 40, tipo: "EVENTO", ciudad: "Entrada Mina", label: "EVENTO", completado: false, disponible: false, conexiones: [3] },
                 { id: 3, x: 380, y: 90, tipo: "COMBATE", ciudad: "Salida Mina", label: "COMBATE", completado: false, disponible: false, conexiones: [5] },
-                { id: 4, x: 160, y: 100, tipo: "COMBATE", ciudad: "Puente del RÃ­o", label: "COMBATE", completado: false, disponible: true, conexiones: [5] },
+                { id: 4, x: 160, y: 100, tipo: "COMBATE", ciudad: "Puente del Río", label: "COMBATE", completado: false, disponible: true, conexiones: [5] },
                 { id: 5, x: 240, y: 135, tipo: "CAMPAMENTO", ciudad: "Chuquisaca", label: "CAMPAMENTO", completado: false, disponible: false, conexiones: [6] },
                 { id: 6, x: 140, y: 195, tipo: "EVENTO", ciudad: "Cofre Abajo", label: "EVENTO", completado: false, disponible: false, conexiones: [7] },
-                { id: 7, x: 200, y: 230, tipo: "COMBATE", ciudad: "Antes PotosÃ­", label: "COMBATE", completado: false, disponible: false, conexiones: [8] },
-                { id: 8, x: 270, y: 220, tipo: "TIENDA", ciudad: "PotosÃ­", label: "TIENDA", completado: false, disponible: false, conexiones: [9] },
+                { id: 7, x: 200, y: 230, tipo: "COMBATE", ciudad: "Antes Potosí", label: "COMBATE", completado: false, disponible: false, conexiones: [8] },
+                { id: 8, x: 270, y: 220, tipo: "TIENDA", ciudad: "Potosí", label: "TIENDA", completado: false, disponible: false, conexiones: [9] },
                 { id: 9, x: 350, y: 185, tipo: "JEFE", ciudad: "Cerro Rico", label: "JEFE", completado: false, disponible: false, conexiones: [] }
             ],
 
-            // â”€â”€ ACTO 3: ALTIPLANO Y SALAR CÃ“SMICO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            // â”€â”€ ACTO 3: SALAR CÃ“SMICO (Trayectoria de la lÃ­nea azul) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            // Ruta lineal desde La Paz hacia el corazÃ³n del Salar CÃ³smico
+            // ── ACTO 3: ALTIPLANO Y SALAR CÓSMICO ────────────────────────────────────
+            // ── ACTO 3: SALAR CÓSMICO (Trayectoria de la línea azul) ────────────────────────────────────
+            // Ruta lineal desde La Paz hacia el corazón del Salar Cósmico
             3: [
                 { id: 0, x: 215, y: 70, tipo: "INICIO", ciudad: "La Paz", label: "INICIO", completado: true, disponible: false, conexiones: [1] },
                 { id: 1, x: 250, y: 100, tipo: "COMBATE", ciudad: "Tiwanaku", label: "COMBATE", completado: false, disponible: true, conexiones: [2] },
@@ -2375,82 +2374,82 @@
             ]
 
         };
-        // nodosMapa es la lista activa del acto actual â€” se reasigna al cambiar de acto
+        // nodosMapa es la lista activa del acto actual — se reasigna al cambiar de acto
         let nodosMapa = JSON.parse(JSON.stringify(NODOS_POR_ACTO[1]));
 
         // ==========================================
-        // ARTÃCULOS DE LA TIENDA DEL CALLAWAYA
+        // ARTÍCULOS DE LA TIENDA DEL CALLAWAYA
         // ==========================================
         // ==========================================
-        // ARTÃCULOS DE LA TIENDA TEMÃTICOS POR ACTO Y PUNTO
+        // ARTÍCULOS DE LA TIENDA TEMÁTICOS POR ACTO Y PUNTO
         // ==========================================
         // ==========================================
-        // TIENDAS TEMÃTICAS POR NODO Y ACTO
+        // TIENDAS TEMÁTICAS POR NODO Y ACTO
         // ==========================================
-        // Los Ã­tems se identifican por su ID Ãºnico (usado en usarItem()).
-        // Los nodos de tienda tienen diferentes IDs en cada acto, asÃ­ que
-        // no hay colisiÃ³n: Acto1â†’{4,5}, Acto2â†’{4,7}, Acto3â†’{3,7,10}.
-        // La funciÃ³n obtenerItemsTiendaActual() combina actoActual + nodoActualIndex
-        // para devolver los Ã­tems correctos en cada pantalla de tienda.
+        // Los ítems se identifican por su ID único (usado en usarItem()).
+        // Los nodos de tienda tienen diferentes IDs en cada acto, así que
+        // no hay colisión: Acto1→{4,5}, Acto2→{4,7}, Acto3→{3,7,10}.
+        // La función obtenerItemsTiendaActual() combina actoActual + nodoActualIndex
+        // para devolver los ítems correctos en cada pantalla de tienda.
 
         const TIENDAS_POR_NODO = {
-            // â”€â”€ ACTO 1: AMAZONÃA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 1: AMAZONÍA ────────────────────────────────────────────────────
             "1_4": { // Trinidad: Mercado Beniense
                 titulo: "Mercado de Trinidad",
                 items: [
-                    { id: "majadito", nombre: "Majadito", costo: 15, x: 90, y: 80, desc: "+25 Vida", emoji: "ðŸ›" },
-                    { id: "copaiba", nombre: "BÃ¡lsamo Copaiba", costo: 20, x: 260, y: 80, desc: "+15 Def.", emoji: "ðŸ§ª" },
-                    { id: "cerbatana", nombre: "Cerbatana", costo: 30, x: 90, y: 145, desc: "35 DaÃ±o", emoji: "ðŸ¹" },
-                    { id: "unadegato", nombre: "UÃ±a de Gato", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸŒ¿" }
+                    { id: "majadito", nombre: "Majadito", costo: 15, x: 90, y: 80, desc: "+25 Vida", emoji: "🍛" },
+                    { id: "copaiba", nombre: "Bálsamo Copaiba", costo: 20, x: 260, y: 80, desc: "+15 Def.", emoji: "🧪" },
+                    { id: "cerbatana", nombre: "Cerbatana", costo: 30, x: 90, y: 145, desc: "35 Daño", emoji: "🏹" },
+                    { id: "unadegato", nombre: "Uña de Gato", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "🌿" }
                 ]
             },
-            "1_5": { // GuayaramerÃ­n: Barraca del Maderero
+            "1_5": { // Guayaramerín: Barraca del Maderero
                 titulo: "Barraca del Maderero",
                 items: [
-                    { id: "castana", nombre: "CastaÃ±a", costo: 12, x: 90, y: 80, desc: "+20 Vida", emoji: "ðŸŒ°" },
-                    { id: "aceiteselva", nombre: "Aceite Almendra", costo: 18, x: 260, y: 80, desc: "+15 Def.", emoji: "ðŸ’§" },
-                    { id: "machete", nombre: "Machete", costo: 32, x: 90, y: 145, desc: "38 DaÃ±o", emoji: "ðŸ—¡ï¸" },
-                    { id: "resinaselva", nombre: "Sangre de Grado", costo: 22, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸ©¸" }
+                    { id: "castana", nombre: "Castaña", costo: 12, x: 90, y: 80, desc: "+20 Vida", emoji: "🌰" },
+                    { id: "aceiteselva", nombre: "Aceite Almendra", costo: 18, x: 260, y: 80, desc: "+15 Def.", emoji: "💧" },
+                    { id: "machete", nombre: "Machete", costo: 32, x: 90, y: 145, desc: "38 Daño", emoji: "🗡️" },
+                    { id: "resinaselva", nombre: "Sangre de Grado", costo: 22, x: 260, y: 145, desc: "Sana Males", emoji: "🩸" }
                 ]
             },
 
-            // â”€â”€ ACTO 2: VALLES Y MINAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            "2_8": { // PotosÃ­
-                titulo: "Mercado de PotosÃ­",
+            // ── ACTO 2: VALLES Y MINAS ───────────────────────────────────────────────
+            "2_8": { // Potosí
+                titulo: "Mercado de Potosí",
                 items: [
-                    { id: "chicha", nombre: "Chicha de MaÃ­z", costo: 18, x: 90, y: 80, desc: "+30 Vida", emoji: "ðŸº" },
-                    { id: "cuero", nombre: "Escudo de Cuero", costo: 28, x: 260, y: 80, desc: "+18 Def.", emoji: "ðŸ›¡ï¸" },
-                    { id: "plata", nombre: "Plata del Cerro", costo: 35, x: 90, y: 145, desc: "+20 Def.", emoji: "âš™ï¸" },
-                    { id: "menta", nombre: "Hierba Menta", costo: 22, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸŒ±" }
+                    { id: "chicha", nombre: "Chicha de Maíz", costo: 18, x: 90, y: 80, desc: "+30 Vida", emoji: "🍺" },
+                    { id: "cuero", nombre: "Escudo de Cuero", costo: 28, x: 260, y: 80, desc: "+18 Def.", emoji: "🛡️" },
+                    { id: "plata", nombre: "Plata del Cerro", costo: 35, x: 90, y: 145, desc: "+20 Def.", emoji: "⚙️" },
+                    { id: "menta", nombre: "Hierba Menta", costo: 22, x: 260, y: 145, desc: "Sana Males", emoji: "🌱" }
                 ]
             },
 
-            // â”€â”€ ACTO 3: ALTIPLANO Y SALAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 3: ALTIPLANO Y SALAR ────────────────────────────────────────────
             "3_3": { // La Paz: Feria de Alasitas
                 titulo: "Feria de Alasitas",
                 items: [
-                    { id: "lluchu", nombre: "Tunta", costo: 20, x: 90, y: 80, desc: "+35 Vida", emoji: "â˜ï¸" },
-                    { id: "hoja", nombre: "Hoja de Coca", costo: 30, x: 260, y: 80, desc: "+25 Def.", emoji: "ðŸŒ¿" },
-                    { id: "boleadora", nombre: "Boleadora", costo: 40, x: 90, y: 145, desc: "45 DaÃ±o", emoji: "âš¡" },
-                    { id: "incienso", nombre: "Incienso del Cerro", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸ’¨" }
+                    { id: "lluchu", nombre: "Tunta", costo: 20, x: 90, y: 80, desc: "+35 Vida", emoji: "☁️" },
+                    { id: "hoja", nombre: "Hoja de Coca", costo: 30, x: 260, y: 80, desc: "+25 Def.", emoji: "🌿" },
+                    { id: "boleadora", nombre: "Boleadora", costo: 40, x: 90, y: 145, desc: "45 Daño", emoji: "⚡" },
+                    { id: "incienso", nombre: "Incienso del Cerro", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "💨" }
                 ]
             },
-            "3_7": { // Yungas: Mercado de los EspÃ­ritus
-                titulo: "Mercado de los EspÃ­ritus",
+            "3_7": { // Yungas: Mercado de los Espíritus
+                titulo: "Mercado de los Espíritus",
                 items: [
-                    { id: "locoto", nombre: "Locoto Silvestre", costo: 18, x: 90, y: 80, desc: "+30 Vida", emoji: "ðŸŒ¶ï¸" },
-                    { id: "aymara", nombre: "Amuleto Aymara", costo: 35, x: 260, y: 80, desc: "+22 Def.", emoji: "ðŸª¬" },
-                    { id: "suri", nombre: "Pluma de Suri", costo: 38, x: 90, y: 145, desc: "42 DaÃ±o", emoji: "ðŸ¦¤" },
-                    { id: "koa", nombre: "K'oa Sagrada", costo: 28, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸ”¥" }
+                    { id: "locoto", nombre: "Locoto Silvestre", costo: 18, x: 90, y: 80, desc: "+30 Vida", emoji: "🌶️" },
+                    { id: "aymara", nombre: "Amuleto Aymara", costo: 35, x: 260, y: 80, desc: "+22 Def.", emoji: "🪬" },
+                    { id: "suri", nombre: "Pluma de Suri", costo: 38, x: 90, y: 145, desc: "42 Daño", emoji: "🦤" },
+                    { id: "koa", nombre: "K'oa Sagrada", costo: 28, x: 260, y: 145, desc: "Sana Males", emoji: "🔥" }
                 ]
             },
             "3_10": { // Uyuni: Puesto del Salar
                 titulo: "Puesto del Salar",
                 items: [
-                    { id: "quinua", nombre: "Quinua Real", costo: 22, x: 90, y: 80, desc: "+35 Vida", emoji: "ðŸŒ¾" },
-                    { id: "sal", nombre: "Escudo de Sal", costo: 32, x: 260, y: 80, desc: "+28 Def.", emoji: "ðŸ§‚" },
-                    { id: "hacha", nombre: "Hacha de Obsidiana", costo: 45, x: 90, y: 145, desc: "50 DaÃ±o", emoji: "ðŸª“" },
-                    { id: "palo", nombre: "Palo Santo", costo: 30, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸªµ" }
+                    { id: "quinua", nombre: "Quinua Real", costo: 22, x: 90, y: 80, desc: "+35 Vida", emoji: "🌾" },
+                    { id: "sal", nombre: "Escudo de Sal", costo: 32, x: 260, y: 80, desc: "+28 Def.", emoji: "🧂" },
+                    { id: "hacha", nombre: "Hacha de Obsidiana", costo: 45, x: 90, y: 145, desc: "50 Daño", emoji: "🪓" },
+                    { id: "palo", nombre: "Palo Santo", costo: 30, x: 260, y: 145, desc: "Sana Males", emoji: "🪵" }
                 ]
             }
         };
@@ -2458,42 +2457,42 @@
         const TIENDA_FALLBACK = {
             titulo: "Mercado Andino",
             items: [
-                { id: "saltena", nombre: "SalteÃ±a", costo: 15, x: 90, y: 80, desc: "+25 Vida", emoji: "ðŸ¥Ÿ" },
-                { id: "copaiba", nombre: "BÃ¡lsamo", costo: 20, x: 260, y: 80, desc: "+15 Def.", emoji: "ðŸ§ª" },
-                { id: "honda", nombre: "Honda", costo: 30, x: 90, y: 145, desc: "35 DaÃ±o", emoji: "ðŸª¨" },
-                { id: "menta", nombre: "Hierba Menta", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "ðŸŒ±" }
+                { id: "saltena", nombre: "Salteña", costo: 15, x: 90, y: 80, desc: "+25 Vida", emoji: "🥟" },
+                { id: "copaiba", nombre: "Bálsamo", costo: 20, x: 260, y: 80, desc: "+15 Def.", emoji: "🧪" },
+                { id: "honda", nombre: "Honda", costo: 30, x: 90, y: 145, desc: "35 Daño", emoji: "🪨" },
+                { id: "menta", nombre: "Hierba Menta", costo: 25, x: 260, y: 145, desc: "Sana Males", emoji: "🌱" }
             ]
         };
 
-        // â”€â”€ SISTEMA DE BUFFS POR NIVELES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── SISTEMA DE BUFFS POR NIVELES ───────────────────────────────────────
         const BUFFS_NIVELES = [
             {
                 id: 'vitalidad',
                 nombre: 'Vitalidad Andina',
-                icono: 'â¤ï¸',
+                icono: '❤️',
                 color: '#e74c3c',
                 colorOsc: 'rgba(100,20,15,0.45)',
                 niveles: [
-                    { costo: 30, desc: '+20 HP MÃ¡x', efecto: 'hp_max', valor: 20 },
-                    { costo: 55, desc: '+35 HP MÃ¡x', efecto: 'hp_max', valor: 35 },
-                    { costo: 90, desc: '+50 HP MÃ¡x', efecto: 'hp_max', valor: 50 }
+                    { costo: 30, desc: '+20 HP Máx', efecto: 'hp_max', valor: 20 },
+                    { costo: 55, desc: '+35 HP Máx', efecto: 'hp_max', valor: 35 },
+                    { costo: 90, desc: '+50 HP Máx', efecto: 'hp_max', valor: 50 }
                 ]
             },
             {
                 id: 'energia',
-                nombre: 'EnergÃ­a del CÃ³ndor',
-                icono: 'âš¡',
+                nombre: 'Energía del Cóndor',
+                icono: '⚡',
                 color: '#f1c40f',
                 colorOsc: 'rgba(100,80,0,0.45)',
                 niveles: [
-                    { costo: 60, desc: '+1 AP MÃ¡x', efecto: 'ap_max', valor: 1 },
-                    { costo: 100, desc: '+1 AP MÃ¡x', efecto: 'ap_max', valor: 1 }
+                    { costo: 60, desc: '+1 AP Máx', efecto: 'ap_max', valor: 1 },
+                    { costo: 100, desc: '+1 AP Máx', efecto: 'ap_max', valor: 1 }
                 ]
             },
             {
                 id: 'defensa',
                 nombre: 'Piel del Jaguar',
-                icono: 'ðŸ›¡ï¸',
+                icono: '🛡️',
                 color: '#3498db',
                 colorOsc: 'rgba(10,40,80,0.45)',
                 niveles: [
@@ -2505,13 +2504,13 @@
             {
                 id: 'fuerza',
                 nombre: 'Filo del Minero',
-                icono: 'âš”ï¸',
+                icono: '⚔️',
                 color: '#e67e22',
                 colorOsc: 'rgba(100,40,5,0.45)',
                 niveles: [
-                    { costo: 45, desc: '+15 DaÃ±o Fijo', efecto: 'danio_bonus', valor: 15 },
-                    { costo: 80, desc: '+25 DaÃ±o Fijo', efecto: 'danio_bonus', valor: 25 },
-                    { costo: 120, desc: '+35 DaÃ±o Fijo', efecto: 'danio_bonus', valor: 35 }
+                    { costo: 45, desc: '+15 Daño Fijo', efecto: 'danio_bonus', valor: 15 },
+                    { costo: 80, desc: '+25 Daño Fijo', efecto: 'danio_bonus', valor: 25 },
+                    { costo: 120, desc: '+35 Daño Fijo', efecto: 'danio_bonus', valor: 35 }
                 ]
             }
         ];
@@ -2525,26 +2524,26 @@
         }
 
         function obtenerItemsTiendaActual() {
-            // Primero intentamos la clave combinada acto+nodo para mÃ¡xima especificidad
+            // Primero intentamos la clave combinada acto+nodo para máxima especificidad
             const claveExacta = `${actoActual}_${nodoActualIndex}`;
             if (TIENDAS_POR_NODO[claveExacta]) return TIENDAS_POR_NODO[claveExacta].items;
-            // Fallback genÃ©rico
+            // Fallback genérico
             return TIENDA_FALLBACK.items;
         }
 
         function obtenerPasivasTiendaActual() {
             const pasivas = {
                 1: [
-                    { id: "p1", nombre: "Amuleto Selva", costo: 30, desc: "+15 Vida MÃ¡x", efecto: "hp_max", valor: 15, x: 0, y: 0 },
-                    { id: "p2", nombre: "Piel de CaimÃ¡n", costo: 35, desc: "+5 Def. Inicial", efecto: "escudo_ini", valor: 5, x: 0, y: 0 }
+                    { id: "p1", nombre: "Amuleto Selva", costo: 30, desc: "+15 Vida Máx", efecto: "hp_max", valor: 15, x: 0, y: 0 },
+                    { id: "p2", nombre: "Piel de Caimán", costo: 35, desc: "+5 Def. Inicial", efecto: "escudo_ini", valor: 5, x: 0, y: 0 }
                 ],
                 2: [
-                    { id: "p3", nombre: "PulmÃ³n Minero", costo: 40, desc: "+25 Vida MÃ¡x", efecto: "hp_max", valor: 25, x: 0, y: 0 },
-                    { id: "p4", nombre: "Pico de Plata", costo: 85, desc: "+1 E. MÃ¡x", efecto: "ap_max", valor: 1, x: 0, y: 0 }
+                    { id: "p3", nombre: "Pulmón Minero", costo: 40, desc: "+25 Vida Máx", efecto: "hp_max", valor: 25, x: 0, y: 0 },
+                    { id: "p4", nombre: "Pico de Plata", costo: 85, desc: "+1 E. Máx", efecto: "ap_max", valor: 1, x: 0, y: 0 }
                 ],
                 3: [
-                    { id: "p5", nombre: "Alma CÃ³ndor", costo: 50, desc: "+35 Vida MÃ¡x", efecto: "hp_max", valor: 35, x: 0, y: 0 },
-                    { id: "p6", nombre: "Chakana Eterna", costo: 110, desc: "+2 E. MÃ¡x", efecto: "ap_max", valor: 2, x: 0, y: 0 }
+                    { id: "p5", nombre: "Alma Cóndor", costo: 50, desc: "+35 Vida Máx", efecto: "hp_max", valor: 35, x: 0, y: 0 },
+                    { id: "p6", nombre: "Chakana Eterna", costo: 110, desc: "+2 E. Máx", efecto: "ap_max", valor: 2, x: 0, y: 0 }
                 ]
             };
             const todas = pasivas[actoActual] || pasivas[1];
@@ -2552,70 +2551,70 @@
         }
 
         function obtenerCartasTiendaActual() {
-            // Pool completo de cartas â€” se filtra segÃºn ranuras bloqueadas del jugador
+            // Pool completo de cartas — se filtra según ranuras bloqueadas del jugador
             // Ranuras null = slot disponible para comprar
             const POOL_CARTAS = [
-                // â”€â”€â”€ Elementales â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ─── Elementales ────────────────────────────────────────────────────────
                 {
-                    id: "ce1", nombre: "Torrente Jichi", costo: 55, desc: "35 daÃ±o. Empapado", categoria: "elemental", emoji: "ðŸ’§",
+                    id: "ce1", nombre: "Torrente Jichi", costo: 55, desc: "35 daño. Empapado", categoria: "elemental", emoji: "💧",
                     tipo: "Elemental (Agua)",
-                    carta: { nombre: "Torrente Jichi", costoAP: 2, tipo: "Elemental (Agua)", categoria: "elemental", daÃ±o: 35, efecto: "EMPAPADO", valor: 0, cooldown: 2, descripcion: "35 daÃ±o. Aplica Empapado." }
+                    carta: { nombre: "Torrente Jichi", costoAP: 2, tipo: "Elemental (Agua)", categoria: "elemental", daño: 35, efecto: "EMPAPADO", valor: 0, cooldown: 2, descripcion: "35 daño. Aplica Empapado." }
                 },
                 {
-                    id: "ce2", nombre: "Llama del Ekeko", costo: 60, desc: "40 daÃ±o elemental", categoria: "elemental", emoji: "ðŸ”¥",
+                    id: "ce2", nombre: "Llama del Ekeko", costo: 60, desc: "40 daño elemental", categoria: "elemental", emoji: "🔥",
                     tipo: "Elemental (Fuego)",
-                    carta: { nombre: "Llama del Ekeko", costoAP: 2, tipo: "Elemental (Fuego)", categoria: "elemental", daÃ±o: 40, efecto: "QUEMADO", valor: 3, cooldown: 2, descripcion: "40 daÃ±o. Aplica Quemado." }
+                    carta: { nombre: "Llama del Ekeko", costoAP: 2, tipo: "Elemental (Fuego)", categoria: "elemental", daño: 40, efecto: "QUEMADO", valor: 3, cooldown: 2, descripcion: "40 daño. Aplica Quemado." }
                 },
-                // â”€â”€â”€ Mejoras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ─── Mejoras ────────────────────────────────────────────────────────────
                 {
-                    id: "cm1", nombre: "Coca Ancestral", costo: 45, desc: "+2 AP este turno", categoria: "mejora", emoji: "ðŸŒ¿",
+                    id: "cm1", nombre: "Coca Ancestral", costo: 45, desc: "+2 AP este turno", categoria: "mejora", emoji: "🌿",
                     tipo: "Mejora",
-                    carta: { nombre: "Coca Ancestral", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "EnergÃ­a andina. +2 AP este turno." }
+                    carta: { nombre: "Coca Ancestral", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "Energía andina. +2 AP este turno." }
                 },
                 {
-                    id: "cm2", nombre: "Brebaje Sabio", costo: 45, desc: "+2 AP este turno", categoria: "mejora", emoji: "ðŸ§ª",
+                    id: "cm2", nombre: "Brebaje Sabio", costo: 45, desc: "+2 AP este turno", categoria: "mejora", emoji: "🧪",
                     tipo: "Mejora",
                     carta: { nombre: "Brebaje Sabio", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "Suma +2 AP este turno." }
                 },
-                // â”€â”€â”€ Nerfeo / Debilitar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ─── Nerfeo / Debilitar ─────────────────────────────────────────────────
                 {
-                    id: "cn1", nombre: "Mal de Ojo", costo: 40, desc: "Debilita enemigo", categoria: "nerfeo", emoji: "ðŸ‘ï¸",
+                    id: "cn1", nombre: "Mal de Ojo", costo: 40, desc: "Debilita enemigo", categoria: "nerfeo", emoji: "👁️",
                     tipo: "Nerfeo",
                     carta: { nombre: "Mal de Ojo", costoAP: 1, tipo: "Nerfeo", categoria: "nerfeo", efecto: "DEBILITAR", valor: 0, cooldown: 2, descripcion: "Debilita: -5 ATK enemigo." }
                 },
                 {
-                    id: "cn2", nombre: "Susurro del Yatiri", costo: 40, desc: "Silencia 1 turno", categoria: "nerfeo", emoji: "ðŸª¬",
+                    id: "cn2", nombre: "Susurro del Yatiri", costo: 40, desc: "Silencia 1 turno", categoria: "nerfeo", emoji: "🪬",
                     tipo: "Nerfeo",
                     carta: { nombre: "Susurro del Yatiri", costoAP: 1, tipo: "Nerfeo", categoria: "nerfeo", efecto: "DEBILITAR", valor: 5, cooldown: 2, descripcion: "Silencia al enemigo 1 turno." }
                 },
-                // â”€â”€â”€ Mejoras ofensivas (upgrade del slot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ─── Mejoras ofensivas (upgrade del slot) ───────────────────────────────
                 {
-                    id: "co2", nombre: "Golpe Certero", costo: 40, desc: "20 daÃ±o fÃ­sico", categoria: "ofensiva", emoji: "âš”ï¸",
+                    id: "co2", nombre: "Golpe Certero", costo: 40, desc: "20 daño físico", categoria: "ofensiva", emoji: "⚔️",
                     tipo: "Ofensiva",
-                    carta: { nombre: "Golpe Certero", costoAP: 1, tipo: "Ofensiva", categoria: "ofensiva", daÃ±o: 20, cooldown: 1, descripcion: "Golpe preciso. DaÃ±o 20." }
+                    carta: { nombre: "Golpe Certero", costoAP: 1, tipo: "Ofensiva", categoria: "ofensiva", daño: 20, cooldown: 1, descripcion: "Golpe preciso. Daño 20." }
                 },
                 {
-                    id: "cd2", nombre: "Casco Minero", costo: 40, desc: "+35 Escudo", categoria: "defensiva", emoji: "ðŸª–",
+                    id: "cd2", nombre: "Casco Minero", costo: 40, desc: "+35 Escudo", categoria: "defensiva", emoji: "🪖",
                     tipo: "Defensiva",
                     carta: { nombre: "Casco Minero", costoAP: 1, tipo: "Defensiva", categoria: "defensiva", bloqueo: 35, cooldown: 2, descripcion: "Bloqueo reforzado. +35 Escudo." }
                 }
             ];
-            // Solo retornar cartas cuyo slot (categoria) estÃ¡ bloqueado (null) en la mano
+            // Solo retornar cartas cuyo slot (categoria) está bloqueado (null) en la mano
             return POOL_CARTAS.filter(c => jugador.mano[c.categoria] === null);
 
-            // â”€â”€ Legacy mapping (mantenido por si algo lo referencia) â”€â”€
+            // ── Legacy mapping (mantenido por si algo lo referencia) ──
             const cartas = {
                 1: [
-                    { id: "c1", nombre: "Golpe Certero", costo: 40, desc: "Ataque 20", categoria: "ofensiva", carta: { nombre: "Golpe Certero", costoAP: 1, tipo: "Ofensiva", categoria: "ofensiva", daÃ±o: 20, cooldown: 1, descripcion: "Golpe preciso. DaÃ±o 20." }, x: 0, y: 0 },
-                    { id: "c2", nombre: "Brebaje Sabio", costo: 45, desc: "+2 EnergÃ­a", categoria: "mejora", carta: { nombre: "Brebaje Sabio", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "Suma +2 AP este turno." }, x: 0, y: 0 }
+                    { id: "c1", nombre: "Golpe Certero", costo: 40, desc: "Ataque 20", categoria: "ofensiva", carta: { nombre: "Golpe Certero", costoAP: 1, tipo: "Ofensiva", categoria: "ofensiva", daño: 20, cooldown: 1, descripcion: "Golpe preciso. Daño 20." }, x: 0, y: 0 },
+                    { id: "c2", nombre: "Brebaje Sabio", costo: 45, desc: "+2 Energía", categoria: "mejora", carta: { nombre: "Brebaje Sabio", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "AP_BONUS", valor: 2, cooldown: 2, descripcion: "Suma +2 AP este turno." }, x: 0, y: 0 }
                 ],
                 2: [
-                    { id: "c3", nombre: "Dinamita", costo: 50, desc: "Ataque 45", categoria: "ofensiva", carta: { nombre: "Dinamita", costoAP: 2, tipo: "Ofensiva", categoria: "ofensiva", daÃ±o: 45, cooldown: 2, descripcion: "ExplosiÃ³n masiva. DaÃ±o 45." }, x: 0, y: 0 },
+                    { id: "c3", nombre: "Dinamita", costo: 50, desc: "Ataque 45", categoria: "ofensiva", carta: { nombre: "Dinamita", costoAP: 2, tipo: "Ofensiva", categoria: "ofensiva", daño: 45, cooldown: 2, descripcion: "Explosión masiva. Daño 45." }, x: 0, y: 0 },
                     { id: "c4", nombre: "Casco Minero", costo: 40, desc: "+35 Defensa", categoria: "defensiva", carta: { nombre: "Casco Minero", costoAP: 1, tipo: "Defensiva", categoria: "defensiva", bloqueo: 35, cooldown: 2, descripcion: "Te proteges bien. +35 Escudo." }, x: 0, y: 0 }
                 ],
                 3: [
-                    { id: "c5", nombre: "Ira del Ekeko", costo: 75, desc: "Ataque Mag. 60", categoria: "elemental", carta: { nombre: "Ira del Ekeko", costoAP: 3, tipo: "Elemental", categoria: "elemental", daÃ±o: 60, cooldown: 3, descripcion: "DaÃ±o abrumador. DaÃ±o 60." }, x: 0, y: 0 },
-                    { id: "c6", nombre: "Rezo Sagrado", costo: 85, desc: "Cura 40 Vida", categoria: "mejora", carta: { nombre: "Rezo Sagrado", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "CURAR", valor: 40, cooldown: 2, descripcion: "Gran bendiciÃ³n. Cura 40 HP." }, x: 0, y: 0 }
+                    { id: "c5", nombre: "Ira del Ekeko", costo: 75, desc: "Ataque Mag. 60", categoria: "elemental", carta: { nombre: "Ira del Ekeko", costoAP: 3, tipo: "Elemental", categoria: "elemental", daño: 60, cooldown: 3, descripcion: "Daño abrumador. Daño 60." }, x: 0, y: 0 },
+                    { id: "c6", nombre: "Rezo Sagrado", costo: 85, desc: "Cura 40 Vida", categoria: "mejora", carta: { nombre: "Rezo Sagrado", costoAP: 1, tipo: "Mejora", categoria: "mejora", efecto: "CURAR", valor: 40, cooldown: 2, descripcion: "Gran bendición. Cura 40 HP." }, x: 0, y: 0 }
                 ]
             };
             return cartas[actoActual] || cartas[1];
@@ -2625,63 +2624,63 @@
         // DATOS DEL ENCUENTRO CON EL YATIRI
         // ==========================================
         // ==========================================
-        // EVENTOS TEMÃTICOS POR ACTO Y NODO
+        // EVENTOS TEMÁTICOS POR ACTO Y NODO
         // ==========================================
-        // Clave: `${actoActual}_${nodoActualIndex}` para mÃ¡xima especificidad.
+        // Clave: `${actoActual}_${nodoActualIndex}` para máxima especificidad.
         // Si no existe, se usa EVENTO_YATIRI_FALLBACK.
         const EVENTOS_POR_NODO = {
 
-            // â”€â”€ ACTO 1: AMAZONÃA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 1: AMAZONÍA ────────────────────────────────────────────────────
             "1_3": {
                 titulo: "EL MAPINGUARI",
-                descripcion: "Un estruendo sacude la selva. Ojos rojos entre las lianas...\nel Mapinguari te observa. El olor a muerte te rodea.\nÂ¿Intentas domarlo o huyes en silencio?",
+                descripcion: "Un estruendo sacude la selva. Ojos rojos entre las lianas...\nel Mapinguari te observa. El olor a muerte te rodea.\n¿Intentas domarlo o huyes en silencio?",
                 opciones: [
                     { id: 0, texto: "1. Domarlo (-30HP | +50G)", x: 27, y: 160 },
                     { id: 1, texto: "2. Huir en silencio", x: 27, y: 202 }
                 ],
                 efecto1: (j) => { j.hp -= 30; j.oro += 50; return { msg: "Domado con ferocidad", detalle: "-30 HP / +50 Oro", tipo: "especial" }; },
-                efecto2: (j) => { return { msg: "Huiste en silencio", detalle: "Escapas sin daÃ±o", tipo: "compra" }; },
+                efecto2: (j) => { return { msg: "Huiste en silencio", detalle: "Escapas sin daño", tipo: "compra" }; },
                 valida1: (j) => j.hp > 30,
-                msgError1: "Necesitas mÃ¡s de 30 HP para arriesgarte"
+                msgError1: "Necesitas más de 30 HP para arriesgarte"
             },
             "1_7": {
                 titulo: "EL BUFEO COLORADO",
-                descripcion: "En el rÃ­o ItÃ©nez emerge un delfÃ­n rosado que brilla\ncon magia ancestral. Te habla en sueÃ±os:\n'Bebe del rÃ­o sagrado y recuperarÃ¡s fuerzas...'",
+                descripcion: "En el río Iténez emerge un delfín rosado que brilla\ncon magia ancestral. Te habla en sueños:\n'Bebe del río sagrado y recuperarás fuerzas...'",
                 opciones: [
-                    { id: 0, texto: "1. Beber del rÃ­o (+40 HP)", x: 27, y: 160 },
-                    { id: 1, texto: "2. Ofrendar tu oro (-15G | HP mÃ¡x +5)", x: 27, y: 202 }
+                    { id: 0, texto: "1. Beber del río (+40 HP)", x: 27, y: 160 },
+                    { id: 1, texto: "2. Ofrendar tu oro (-15G | HP máx +5)", x: 27, y: 202 }
                 ],
                 efecto1: (j) => { j.hp = Math.min(j.hpMax, j.hp + 40); return { msg: "Aguas sagradas", detalle: "+40 HP recuperados", tipo: "compra" }; },
-                efecto2: (j) => { j.oro -= 15; j.hpMax += 5; j.hp += 5; return { msg: "Ofrenda al Bufeo", detalle: "-15G / HP mÃ¡x +5", tipo: "especial" }; },
+                efecto2: (j) => { j.oro -= 15; j.hpMax += 5; j.hp += 5; return { msg: "Ofrenda al Bufeo", detalle: "-15G / HP máx +5", tipo: "especial" }; },
                 valida1: (j) => true,
                 valida2: (j) => j.oro >= 15,
                 msgError2: "Necesitas 15G para ofrendar al Bufeo"
             },
             "1_11": {
                 titulo: "RUINAS DE SAMAIPATA",
-                descripcion: "El CÃ³ndor Sagrado planea sobre el fuerte de piedra.\nUn espÃ­ritu guardiÃ¡n pide una ofrenda\nantes de dejarte pasar...",
+                descripcion: "El Cóndor Sagrado planea sobre el fuerte de piedra.\nUn espíritu guardián pide una ofrenda\nantes de dejarte pasar...",
                 opciones: [
                     { id: 0, texto: "1. Ofrenda de sangre (-20HP | +60G)", x: 27, y: 160 },
                     { id: 1, texto: "2. Rezar en silencio (+20 HP)", x: 27, y: 202 }
                 ],
                 efecto1: (j) => { j.hp -= 20; j.oro += 60; return { msg: "Ofrenda de sangre", detalle: "-20 HP / +60 Oro", tipo: "eventoMal" }; },
-                efecto2: (j) => { j.hp = Math.min(j.hpMax, j.hp + 20); return { msg: "El CÃ³ndor te bendice", detalle: "+20 HP recuperados", tipo: "compra" }; },
+                efecto2: (j) => { j.hp = Math.min(j.hpMax, j.hp + 20); return { msg: "El Cóndor te bendice", detalle: "+20 HP recuperados", tipo: "compra" }; },
                 valida1: (j) => j.hp > 20,
-                msgError1: "Necesitas mÃ¡s de 20 HP para la ofrenda"
+                msgError1: "Necesitas más de 20 HP para la ofrenda"
             },
 
-            // â”€â”€ ACTO 2: VALLES Y MINAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 2: VALLES Y MINAS ───────────────────────────────────────────────
             "2_2": {
                 titulo: "EL MINERO PERDIDO",
-                descripcion: "Escuchas a un minero pidiendo ayuda bajo unos escombros\nen la oscuridad de la mina.\nÂ¿Decides ayudarlo usando tus fuerzas?",
+                descripcion: "Escuchas a un minero pidiendo ayuda bajo unos escombros\nen la oscuridad de la mina.\n¿Decides ayudarlo usando tus fuerzas?",
                 opciones: [
                     { id: 0, texto: "1. Ayudar con fuerza (-15HP | +60G)", x: 27, y: 160 },
                     { id: 1, texto: "2. Ignorar y seguir (Sin costo)", x: 27, y: 202 }
                 ],
-                efecto1: (j) => { j.hp -= 15; j.oro += 60; return { msg: "Â¡Minero Salvado!", detalle: "-15 HP / +60 Oro", tipo: "especial" }; },
+                efecto1: (j) => { j.hp -= 15; j.oro += 60; return { msg: "¡Minero Salvado!", detalle: "-15 HP / +60 Oro", tipo: "especial" }; },
                 efecto2: (j) => { return { msg: "Sigues tu camino", detalle: "No pierdes nada", tipo: "compra" }; },
                 valida1: (j) => j.hp > 15,
-                msgError1: "Necesitas mÃ¡s de 15 HP para levantar los escombros"
+                msgError1: "Necesitas más de 15 HP para levantar los escombros"
             },
             "2_6": {
                 titulo: "EL CARRUAJE ENCALLADO",
@@ -2693,40 +2692,40 @@
                 efecto1: (j) => { j.hp -= 10; j.oro += 60; return { msg: "Cofre Pesado Abierto", detalle: "-10 HP / +60 Oro", tipo: "especial" }; },
                 efecto2: (j) => { j.oro += 25; return { msg: "Bolsillos Revisados", detalle: "+25 Oro", tipo: "compra" }; },
                 valida1: (j) => j.hp > 10,
-                msgError1: "Necesitas mÃ¡s de 10 HP para la fuerza bruta"
+                msgError1: "Necesitas más de 10 HP para la fuerza bruta"
             },
 
-            // â”€â”€ ACTO 3: ALTIPLANO Y SALAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── ACTO 3: ALTIPLANO Y SALAR ────────────────────────────────────────────
             "3_4": {
-                titulo: "ESPÃRITU DEL ILLIMANI",
-                descripcion: "La nieve eterna del Illimani brilla en la distancia.\nUn espÃ­ritu de nieve se manifiesta ante ti.\nÂ¿Ofreces coca o pides su bendiciÃ³n directa?",
+                titulo: "ESPÍRITU DEL ILLIMANI",
+                descripcion: "La nieve eterna del Illimani brilla en la distancia.\nUn espíritu de nieve se manifiesta ante ti.\n¿Ofreces coca o pides su bendición directa?",
                 opciones: [
                     { id: 0, texto: "1. Ofrecer coca (-15G | +50 HP)", x: 27, y: 160 },
-                    { id: 1, texto: "2. Desafiar al espÃ­ritu (-25HP | HP mÃ¡x+15)", x: 27, y: 202 }
+                    { id: 1, texto: "2. Desafiar al espíritu (-25HP | HP máx+15)", x: 27, y: 202 }
                 ],
-                efecto1: (j) => { j.oro -= 15; j.hp = Math.min(j.hpMax, j.hp + 50); return { msg: "BendiciÃ³n del Illimani", detalle: "-15G / +50 HP", tipo: "especial" }; },
-                efecto2: (j) => { j.hp -= 25; j.hpMax += 15; return { msg: "Prueba superada", detalle: "-25 HP / HP mÃ¡x +15", tipo: "eventoMal" }; },
+                efecto1: (j) => { j.oro -= 15; j.hp = Math.min(j.hpMax, j.hp + 50); return { msg: "Bendición del Illimani", detalle: "-15G / +50 HP", tipo: "especial" }; },
+                efecto2: (j) => { j.hp -= 25; j.hpMax += 15; return { msg: "Prueba superada", detalle: "-25 HP / HP máx +15", tipo: "eventoMal" }; },
                 valida1: (j) => j.oro >= 15,
                 valida2: (j) => j.hp > 25,
                 msgError1: "Necesitas 15G para la ofrenda de coca",
-                msgError2: "Necesitas mÃ¡s de 25 HP para el desafÃ­o"
+                msgError2: "Necesitas más de 25 HP para el desafío"
             },
             "3_5": {
                 titulo: "LAGO TITICACA SAGRADO",
-                descripcion: "Las aguas del Titicaca brillan bajo la luna llena.\nLa isla del Sol emerge entre la niebla.\nUn anciano Tiwanakota te ofrece su sabidurÃ­a.",
+                descripcion: "Las aguas del Titicaca brillan bajo la luna llena.\nLa isla del Sol emerge entre la niebla.\nUn anciano Tiwanakota te ofrece su sabiduría.",
                 opciones: [
                     { id: 0, texto: "1. Beber del lago (+50 HP)", x: 27, y: 160 },
-                    { id: 1, texto: "2. DonaciÃ³n sagrada (-20G | HP mÃ¡x +20)", x: 27, y: 202 }
+                    { id: 1, texto: "2. Donación sagrada (-20G | HP máx +20)", x: 27, y: 202 }
                 ],
                 efecto1: (j) => { j.hp = Math.min(j.hpMax, j.hp + 50); return { msg: "Agua sagrada del Titicaca", detalle: "+50 HP recuperados", tipo: "compra" }; },
-                efecto2: (j) => { j.oro -= 20; j.hpMax += 20; j.hp += 20; return { msg: "BendiciÃ³n de Viracocha", detalle: "-20G / HP mÃ¡x +20", tipo: "especial" }; },
+                efecto2: (j) => { j.oro -= 20; j.hpMax += 20; j.hp += 20; return { msg: "Bendición de Viracocha", detalle: "-20G / HP máx +20", tipo: "especial" }; },
                 valida1: (j) => true,
                 valida2: (j) => j.oro >= 20,
-                msgError2: "Necesitas 20G para la donaciÃ³n sagrada"
+                msgError2: "Necesitas 20G para la donación sagrada"
             }
         };
 
-        // Fallback: Yatiri genÃ©rico para nodos de evento no mapeados
+        // Fallback: Yatiri genérico para nodos de evento no mapeados
         const EVENTO_YATIRI_FALLBACK = {
             titulo: "EL YATIRI DE LA SULPAYA",
             descripcion: "Encuentras a un anciano Yatiri meditando. Te mira fijamente:\n'El camino por las tierras de Bolivia es duro, joven Mamani.\nPuedo ayudarte, pero todo requiere un intercambio...'",
@@ -2734,22 +2733,22 @@
                 { id: 0, texto: "1. Recibir bendicion (Pagas 10G | +40 HP)", x: 27, y: 160 },
                 { id: 1, texto: "2. Ofrenda a la Pachamama (-20 HP | +40G)", x: 27, y: 202 }
             ],
-            efecto1: (j) => { j.oro -= 10; j.hp = Math.min(j.hpMax, j.hp + 40); return { msg: "BendiciÃ³n del Yatiri", detalle: "+40 HP con humo de k'oa", tipo: "especial" }; },
+            efecto1: (j) => { j.oro -= 10; j.hp = Math.min(j.hpMax, j.hp + 40); return { msg: "Bendición del Yatiri", detalle: "+40 HP con humo de k'oa", tipo: "especial" }; },
             efecto2: (j) => { j.hp -= 20; j.oro += 40; return { msg: "Ofrenda a la Pachamama", detalle: "+40 Oro por tu sacrificio", tipo: "eventoMal" }; },
             valida1: (j) => j.oro >= 10,
             valida2: (j) => j.hp > 20,
             msgError1: "Necesitas 10G para el Yatiri",
-            msgError2: "Necesitas mÃ¡s de 20 HP para la ofrenda"
+            msgError2: "Necesitas más de 20 HP para la ofrenda"
         };
 
-        // Rastrea en quÃ© nodo estÃ¡ parado Mamani actualmente
+        // Rastrea en qué nodo está parado Mamani actualmente
         let nodoActualIndex = 0;
 
         // Estado de la Tienda
         let pestanaTiendaActual = 'objetos';
         let itemSeleccionadoTienda = null;
 
-        // Estructura receptora de imÃ¡genes Base64 procesadas
+        // Estructura receptora de imágenes Base64 procesadas
         const imgDerrotaBase64 = "img/derrota.jpg";
         const imgElTioBase64 = "img/eltio.png";
         const imgHuiracochaBase64 = "img/huiracocha.png";
@@ -2776,9 +2775,9 @@
         const imagenesCargadas = {};
 
         /* ==========================================================================
-           6. CONTENEDOR DE RECURSOS GRÃFICOS (BASE64)
+           6. CONTENEDOR DE RECURSOS GRÁFICOS (BASE64)
            ========================================================================== */
-        // Iconos de categorÃ­as de Ã­tems para el inventario y tiendas
+        // Iconos de categorías de ítems para el inventario y tiendas
         const imgCategorias = {
             comida: new Image(),
             defensa: new Image(),
@@ -2791,7 +2790,7 @@
         imgCategorias.cura.src = "img/cat_cura.png";
 
         function obtenerCategoriaItem(itemId) {
-            const comidas = ["saltena", "majadito", "chicha", "api", "lluchu", "locoto", "quinua", "castana", "chuÃ±o"];
+            const comidas = ["saltena", "majadito", "chicha", "api", "lluchu", "locoto", "quinua", "castana", "chuño"];
             const defensas = ["bicarbonato", "copaiba", "aceiteselva", "plata", "cuero", "hoja", "aymara", "sal"];
             const ataques = ["cerbatana", "honda", "boleadora", "suri", "hacha", "machete", "dinamita"];
             const curas = ["alcohol", "unadegato", "resinaselva", "menta", "salvia", "incienso", "koa", "palo"];
@@ -2805,14 +2804,14 @@
         }
 
         const ASSETS = {
-            // Fondos de los escenarios (Mockups del Salar, AmazonÃ­a, Minas...)
+            // Fondos de los escenarios (Mockups del Salar, Amazonía, Minas...)
             fondos: {
                 apacheta: imgApachetaBase64,
                 yungas: imgYungasBase64,
                 menu: imgMenuBase64,
                 mapa: imgMapaBase64,  // Legacy fallback
-                mapaActo1: "img/mapa_acto1.png",   // AmazonÃ­a - Pando, Beni, Santa Cruz
-                mapaActo2: "img/mapa_acto2.png",   // Minas    - Cochabamba, Chuquisaca, PotosÃ­
+                mapaActo1: "img/mapa_acto1.png",   // Amazonía - Pando, Beni, Santa Cruz
+                mapaActo2: "img/mapa_acto2.png",   // Minas    - Cochabamba, Chuquisaca, Potosí
                 mapaActo3: "img/mapa_acto3.png",   // Salar    - La Paz, Oruro, Tarija
                 derrota: imgDerrotaBase64,
                 victoriaTotal: imgVictoriaBase64,
@@ -2821,16 +2820,16 @@
                 loreLlamado: imgLoreLlamadoBase64,
                 loreAcullico: imgLoreAcullicoBase64,
                 evento: "img/evento.jpg",
-                // Si tienes un fondo para el campamento, pÃ©galo aquÃ­. De lo contrario, usarÃ¡ la fogata animada por cÃ³digo.
+                // Si tienes un fondo para el campamento, pégalo aquí. De lo contrario, usará la fogata animada por código.
                 campamento: "img/campamento.jpg",
 
                 tienda: "img/tienda.jpg",
                 tiendaGuaya: "img/tienda_guaya.png",
-                amazonÃ­a: "img/a.jpg",
+                amazonía: "img/a.jpg",
                 minas: "img/minas.jpg",
                 salarJuego: "img/salarjuego.jpg",
 
-                // Fondos temÃ¡ticos y cinemÃ¡ticas del Acto 1 generados
+                // Fondos temáticos y cinemáticas del Acto 1 generados
                 cine_intro_1: "img/cine_intro_1.png",
                 cine_intro_2: "img/cine_intro_2.png",
                 cine_intro_3: "img/cine_intro_3.png",
@@ -2840,25 +2839,25 @@
                 camp_bg_2: "img/camp_bg_2.png",
                 camp_bg_6: "img/camp_bg_6.png",
                 camp_bg_9: "img/camp_bg_9.png",
-                // Fondos temÃ¡ticos del Acto 2 generados
+                // Fondos temáticos del Acto 2 generados
                 evento_bg_2_2: "img/evento_bg_2_2.png",
                 camp_bg_2_5: "img/camp_bg_2_5.png",
                 evento_bg_2_6: "img/evento_bg_2_6.png",
                 tienda_bg_2_8: "img/tienda_bg_2_8.png",
 
-                // CinemÃ¡tica de transiciÃ³n Acto 1 â†’ 2 (Valles y Minas de PotosÃ­)
+                // Cinemática de transición Acto 1 → 2 (Valles y Minas de Potosí)
                 cine_acto2_1: imgCineActo2_1Base64,
                 cine_acto2_2: imgCineActo2_2Base64,
                 cine_acto2_3: imgCineActo2_3Base64,
 
-                // CinemÃ¡tica de transiciÃ³n Acto 2 â†’ 3 (Altiplano y Salar de Uyuni)
+                // Cinemática de transición Acto 2 → 3 (Altiplano y Salar de Uyuni)
                 cine_acto3_1: imgCineActo3_1Base64,
                 cine_acto3_2: imgCineActo3_2Base64
             },
 
             // Sprites de personajes y enemigos
             personajes: {
-                // Mamani â€” sprites de animaciÃ³n
+                // Mamani — sprites de animación
                 mamani: "img/mamani.png",
                 mamaniOfensivo: "img/mamani_offensive.png",
                 mamaniDefensivo: "img/mamani_defensive.png",
@@ -2866,7 +2865,7 @@
                 mamaniBuff: "img/mamani_buff.png",
                 mamaniDebuff: "img/mamani_debuff.png",
                 mamaniElemental: "img/mamani_elemental.png",
-                // Quirquincho â€” sprites de animaciÃ³n
+                // Quirquincho — sprites de animación
                 quirquincho: "img/quirquincho.png",
                 quirquinchoAtaque: "img/quirquincho_attack.png",
                 quirquinchoDefensivo: "img/quirquincho_defensive.png",
@@ -2894,14 +2893,14 @@
                 supay: imgSupayBase64
             },
 
-            // Iconos de las cartas por categorÃ­a
+            // Iconos de las cartas por categoría
             cartas: {
                 ataque: "img/cat_ataque.png",
                 defensa: "img/cat_defensa.png",
                 mejora: "img/cat_cura.png",
                 fuego: "img/fuego.png",
                 agua: "img/agua.png",
-                // Sprites Ãºnicos de cartas:
+                // Sprites únicos de cartas:
                 "Machete Zafrero": "img/machete_zafrero.png",
                 "Escudo de Cuero": "img/escudo_cuero.png",
                 "Torrente Jichi": "img/torrente_jichi.png",
@@ -2922,7 +2921,7 @@
             },
             // Items de tienda
             items: {
-                salteÃ±a: "",
+                salteña: "",
                 coca: "",
                 machete: ""
             }
@@ -2931,19 +2930,19 @@
 
 
         /* ==========================================================================
-           7. PROCESO DE CARGA DE IMÃGENES
+           7. PROCESO DE CARGA DE IMÁGENES
            ========================================================================== */
-        // Esta funciÃ³n toma tus Base64 y los convierte en objetos Image de JS para el Canvas
+        // Esta función toma tus Base64 y los convierte en objetos Image de JS para el Canvas
         function cargarGraficos(callback) {
             let totalRecursos = 0;
             let recursosCargados = 0;
 
-            // Contamos cuÃ¡ntas imÃ¡genes necesitamos cargar
+            // Contamos cuántas imágenes necesitamos cargar
             for (let categoria in ASSETS) {
                 totalRecursos += Object.keys(ASSETS[categoria]).length;
             }
 
-            // Si no hay imÃ¡genes Base64 cargadas todavÃ­a, iniciamos directo
+            // Si no hay imágenes Base64 cargadas todavía, iniciamos directo
             if (totalRecursos === 0) {
                 callback();
                 return;
@@ -2956,7 +2955,7 @@
                     const src = ASSETS[categoria][key];
 
                     if (src === "") {
-                        // Si el Base64 estÃ¡ vacÃ­o, simulamos que cargÃ³ para no romper el juego
+                        // Si el Base64 está vacío, simulamos que cargó para no romper el juego
                         recursosCargados++;
                         if (recursosCargados === totalRecursos) callback();
                         continue;
@@ -2976,7 +2975,7 @@
                     img.onload = () => {
                         recursosCargados++;
                         if (recursosCargados === totalRecursos) {
-                            callback(); // Arranca el juego cuando todas estÃ©n listas
+                            callback(); // Arranca el juego cuando todas estén listas
                         }
                     };
 
@@ -3001,14 +3000,14 @@
             // Por defecto, asumimos cursor normal
             canvas.style.cursor = 'default';
 
-            // DESACTIVAR SUAVIZADO (Pixel Art nÃ­tido)
+            // DESACTIVAR SUAVIZADO (Pixel Art nítido)
             ctx.imageSmoothingEnabled = false;
             ctx.mozImageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
             ctx.webkitImageSmoothingEnabled = false;
 
             // ==========================================
-            // CONTROL AUTOMÃTICO DE INTERFAZ HTML
+            // CONTROL AUTOMÁTICO DE INTERFAZ HTML
             // ==========================================
             const hudElement = document.getElementById('hud-ui');
             const nodosUiElement = document.getElementById('nodos-ui');
@@ -3020,11 +3019,11 @@
                 (document.getElementById('stats-ui') && document.getElementById('stats-ui').style.display === 'flex');
 
             if (estadoActual === ESTADOS.MAPA && !menuPausaAbierto) {
-                // Solo en el mapa mostramos el HUD de progreso y las etiquetas de los nodos (si no hay menÃºs abiertos)
+                // Solo en el mapa mostramos el HUD de progreso y las etiquetas de los nodos (si no hay menús abiertos)
                 if (hudElement) hudElement.style.display = 'flex';
                 if (nodosUiElement) nodosUiElement.style.display = 'block';
             } else {
-                // En COMBATE, TIENDA, EVENTO, MENU, GAMEOVER, o MENÃšS DE PAUSA ocultamos todo el HUD
+                // En COMBATE, TIENDA, EVENTO, MENU, GAMEOVER, o MENÚS DE PAUSA ocultamos todo el HUD
                 if (hudElement) hudElement.style.display = 'none';
                 if (nodosUiElement) {
                     nodosUiElement.style.display = 'none';
@@ -3032,10 +3031,10 @@
                 }
             }
 
-            // â”€â”€ Sincronizar mÃºsica con el estado actual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Sincronizar música con el estado actual ──────────────────────────
             sistemaAudio.reproducirMusica(estadoActual);
 
-            // Evaluamos en quÃ© pantalla estamos y dibujamos en consecuencia
+            // Evaluamos en qué pantalla estamos y dibujamos en consecuencia
             switch (estadoActual) {
                 case ESTADOS.MENU:
                     dibujarPantallaMenu();
@@ -3078,13 +3077,13 @@
                     break;
             }
 
-            // Dibuja el diÃ¡logo de confirmaciÃ³n por encima de todo (si hay uno activo)
+            // Dibuja el diálogo de confirmación por encima de todo (si hay uno activo)
             dibujarConfirmacion();
 
             // Dibuja el toast por encima de cualquier pantalla si hay uno activo
             dibujarToast();
 
-            // Dibuja el botÃ³n de mute siempre visible (esquina inferior derecha)
+            // Dibuja el botón de mute siempre visible (esquina inferior derecha)
             dibujarBotonMute();
 
             // Solicita al navegador renderizar el siguiente fotograma (60 FPS)
@@ -3092,21 +3091,21 @@
         }
 
         /* ==========================================================================
-           9. FUNCIONES DE DIBUJO TEMPORALES (Sustituyen las imÃ¡genes vacÃ­as)
+           9. FUNCIONES DE DIBUJO TEMPORALES (Sustituyen las imágenes vacías)
            ========================================================================== */
         function dibujarPantallaMenu() {
             // De momento dibujamos un fondo gris oscuro provisional
             ctx.fillStyle = "#1e1e28";
             ctx.fillRect(0, 0, 480, 270);
 
-            // Si ya pusiste tu Base64 en fondos.menu, lo dibujarÃ¡ automÃ¡ticamente
+            // Si ya pusiste tu Base64 en fondos.menu, lo dibujará automáticamente
             if (imagenesCargadas.fondos && imagenesCargadas.fondos.menu) {
                 ctx.drawImage(imagenesCargadas.fondos.menu, 0, 0, 480, 270);
             }
         }
 
         /* ==========================================================================
-           CUTSCENE â€” Pantalla de Historia Narrativa
+           CUTSCENE — Pantalla de Historia Narrativa
            ========================================================================== */
         function dibujarCutscene() {
             const ahora = performance.now();
@@ -3115,7 +3114,7 @@
 
             const slide = CUTSCENE_SLIDES[cutsceneSlideActual];
 
-            // â”€â”€ FONDO CON IMAGEN DE CINEMÃTICA / DEGRADADO FALLBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── FONDO CON IMAGEN DE CINEMÁTICA / DEGRADADO FALLBACK ──────────────
             const imgCine = imagenesCargadas.fondos && imagenesCargadas.fondos[slide.imgKey];
             if (imgCine && imgCine.complete && imgCine.naturalWidth !== 0) {
                 ctx.drawImage(imgCine, 0, 0, 480, 270);
@@ -3127,7 +3126,7 @@
                 ctx.fillRect(0, 0, 480, 270);
             }
 
-            // PartÃ­culas de fondo (estrellitas/polvo) â€” solo si no hay imagen activa
+            // Partículas de fondo (estrellitas/polvo) — solo si no hay imagen activa
             ctx.fillStyle = imgCine && imgCine.complete && imgCine.naturalWidth !== 0
                 ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.12)";
             const seed = cutsceneSlideActual * 137;
@@ -3140,19 +3139,19 @@
                 ctx.fill();
             }
 
-            // â”€â”€ BARRA SUPERIOR E INFERIOR (Estilo cinemÃ¡tico) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── BARRA SUPERIOR E INFERIOR (Estilo cinemático) ──────────────────
             ctx.fillStyle = "rgba(0,0,0,0.75)";
             ctx.fillRect(0, 0, 480, 45);      // Barra superior
             ctx.fillRect(0, 225, 480, 45);    // Barra inferior
 
-            // â”€â”€ NÃšMERO DE SLIDE (esquina superior derecha) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── NÚMERO DE SLIDE (esquina superior derecha) ──────────────────────
             ctx.fillStyle = "rgba(255,255,255,0.3)";
             ctx.font = "4px 'Press Start 2P'";
             ctx.textAlign = "right";
             ctx.fillText((cutsceneSlideActual + 1) + " / " + CUTSCENE_SLIDES.length, 472, 12);
             ctx.textAlign = "left";
 
-            // â”€â”€ LÃNEA DECORATIVA COLOREADA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── LÍNEA DECORATIVA COLOREADA ───────────────────────────────────────
             ctx.strokeStyle = slide.acento;
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -3160,11 +3159,11 @@
             ctx.lineTo(460, 44);
             ctx.stroke();
 
-            // â”€â”€ Sombra de texto para legibilidad sobre imÃ¡genes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Sombra de texto para legibilidad sobre imágenes ──────────────────
             ctx.shadowColor = "#000000";
             ctx.shadowBlur = 6;
 
-            // â”€â”€ TYPEWRITER: TÃTULO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── TYPEWRITER: TÍTULO ──────────────────────────────────────────────
             if (cutsceneTituloIndex < slide.titulo.length) {
                 cutsceneTimer += delta;
                 if (cutsceneTimer >= TYPEWRITER_VELOCIDAD) {
@@ -3172,7 +3171,7 @@
                     cutsceneTituloIndex++;
                 }
             } else if (cutsceneCharIndex < slide.texto.length) {
-                // Solo empezamos el texto cuando el tÃ­tulo terminÃ³
+                // Solo empezamos el texto cuando el título terminó
                 cutsceneTimer += delta;
                 if (cutsceneTimer >= TYPEWRITER_VELOCIDAD * 0.6) {
                     cutsceneTimer = 0;
@@ -3190,11 +3189,11 @@
             ctx.shadowBlur = 0;
             ctx.textAlign = "left";
 
-            // â”€â”€ TYPEWRITER: TEXTO NARRATIVO (con salto de lÃ­nea automÃ¡tico y contorno) â”€â”€â”€â”€â”€
+            // ── TYPEWRITER: TEXTO NARRATIVO (con salto de línea automático y contorno) ─────
             const textoVisible = slide.texto.substring(0, cutsceneCharIndex);
             ctx.font = "5.5px 'Press Start 2P'";
 
-            // Dividir en lÃ­neas de ~42 caracteres
+            // Dividir en líneas de ~42 caracteres
             const palabras = textoVisible.split(" ");
             let lineas = [];
             let lineaActual = "";
@@ -3224,7 +3223,7 @@
                 ctx.fillText(linea, 24, 75 + (i * 18));
             });
 
-            // â”€â”€ CURSOR PARPADEANTE (mientras escribe) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── CURSOR PARPADEANTE (mientras escribe) ───────────────────────────
             if (cutsceneCharIndex < slide.texto.length) {
                 const cursorVisible = Math.floor(ahora / 400) % 2 === 0;
                 if (cursorVisible && lineas.length > 0) {
@@ -3235,19 +3234,19 @@
                 }
             }
 
-            // â”€â”€ INDICADOR "TOCA PARA CONTINUAR" (solo cuando terminÃ³ el texto) â”€â”€
+            // ── INDICADOR "TOCA PARA CONTINUAR" (solo cuando terminó el texto) ──
             if (cutsceneCharIndex >= slide.texto.length && cutsceneTituloIndex >= slide.titulo.length) {
                 const parpadeo = Math.floor(ahora / 500) % 2 === 0;
                 if (parpadeo) {
                     ctx.fillStyle = slide.acento;
                     ctx.font = "4.5px 'Press Start 2P'";
                     ctx.textAlign = "center";
-                    ctx.fillText("â–¶  TOCA PARA CONTINUAR", 240, 240);
+                    ctx.fillText("▶  TOCA PARA CONTINUAR", 240, 240);
                     ctx.textAlign = "left";
                 }
             }
 
-            // â”€â”€ NOMBRE DEL JUEGO (esquina inferior izquierda) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── NOMBRE DEL JUEGO (esquina inferior izquierda) ───────────────────
             ctx.shadowBlur = 0; // Restaurar sombra
             ctx.fillStyle = "rgba(255,255,255,0.2)";
             ctx.font = "3.5px 'Press Start 2P'";
@@ -3255,7 +3254,7 @@
         }
 
         /* ==========================================================================
-           TUTORIAL COMPLETO â€” Pantalla de felicitaciÃ³n in-canvas
+           TUTORIAL COMPLETO — Pantalla de felicitación in-canvas
            ========================================================================== */
         function dibujarTutorialCompleto() {
             // Fondo oscuro elegante
@@ -3282,14 +3281,14 @@
             ctx.fillStyle = "#f1c40f";
             ctx.font = "28px serif";
             ctx.textAlign = "center";
-            ctx.fillText("â˜…", 240, 70);
+            ctx.fillText("★", 240, 70);
             ctx.restore();
 
-            // TÃ­tulo principal
+            // Título principal
             ctx.fillStyle = "#ffcc00";
             ctx.font = "10px 'Press Start 2P'";
             ctx.textAlign = "center";
-            ctx.fillText("Â¡EXCELENTE!", 240, 105);
+            ctx.fillText("¡EXCELENTE!", 240, 105);
 
             // Subttulo
             ctx.fillStyle = "#e0e0e0";
@@ -3299,15 +3298,15 @@
             // Mensaje principal
             ctx.fillStyle = "#a8d8a8";
             ctx.font = "5px 'Press Start 2P'";
-            ctx.fillText("Â¡La Senda de Mamani te espera!", 240, 150);
+            ctx.fillText("¡La Senda de Mamani te espera!", 240, 150);
 
-            // DescripciÃ³n del mapa
+            // Descripción del mapa
             ctx.fillStyle = "#888888";
             ctx.font = "4px 'Press Start 2P'";
             ctx.fillText("Explora el mapa, vence enemigos y desbloquea", 240, 175);
             ctx.fillText("nuevas cartas para tu mazo.", 240, 187);
 
-            // BotÃ³n de continuar (parpadeo)
+            // Botón de continuar (parpadeo)
             const parpadeoContinuar = Math.floor(t * 2) % 2 === 0;
             if (parpadeoContinuar) {
                 ctx.fillStyle = "#ffcc00";
@@ -3319,7 +3318,7 @@
         }
 
         /* ==========================================================================
-           TUTORIAL â€” Combate interactivo guiado
+           TUTORIAL — Combate interactivo guiado
            ========================================================================== */
         function dibujarTutorial() {
             // El tutorial usa la pantalla de combate como base
@@ -3330,24 +3329,24 @@
 
             const ahora = performance.now();
 
-            // â”€â”€ OVERLAY SEMITRANSPARENTE Y SPOTLIGHT (Rendimiento optimizado) â”€â”€â”€â”€â”€
+            // ── OVERLAY SEMITRANSPARENTE Y SPOTLIGHT (Rendimiento optimizado) ─────
             let sp = null;
             let lineasVisuales = paso.lineas;
 
             if (paso.spotlight) {
                 sp = { ...paso.spotlight };
-                // Fase 2 de selecciÃ³n en el tutorial (carta levantada)
+                // Fase 2 de selección en el tutorial (carta levantada)
                 if (paso.accion === "JUGAR_OFENSIVA" && cartaSeleccionadaIndex === 0) {
                     sp.y -= 20; // Sube junto con la carta
                     lineasVisuales = [
-                        "Â¡Bien! La carta esta seleccionada.",
+                        "¡Bien! La carta esta seleccionada.",
                         "TOCALA OTRA VEZ para confirmar",
                         "y atacar al enemigo."
                     ];
                 } else if (paso.accion === "JUGAR_DEFENSIVA" && cartaSeleccionadaIndex === 1) {
                     sp.y -= 20; // Sube junto con la carta
                     lineasVisuales = [
-                        "Â¡Bien! La carta esta seleccionada.",
+                        "¡Bien! La carta esta seleccionada.",
                         "TOCALA OTRA VEZ para confirmar",
                         "y activar tu escudo."
                     ];
@@ -3359,13 +3358,13 @@
                 ctx.beginPath();
                 ctx.rect(0, 0, 480, 270);
                 if (sp) {
-                    // Recortamos el spotlight usando rect en direcciÃ³n opuesta (o regla evenodd)
+                    // Recortamos el spotlight usando rect en dirección opuesta (o regla evenodd)
                     ctx.rect(sp.x + sp.w, sp.y, -sp.w, sp.h);
                 }
                 ctx.fill("evenodd");
             }
 
-            // â”€â”€ EFECTOS VISUALES DEL SPOTLIGHT (Solo si existe) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── EFECTOS VISUALES DEL SPOTLIGHT (Solo si existe) ───────────────────
             if (sp) {
                 ctx.strokeStyle = paso.color || "#ffcc00";
                 ctx.lineWidth = 2;
@@ -3388,16 +3387,16 @@
                 ctx.fill();
             }
 
-            // â”€â”€ LÃ“GICA DE AUTO-AVANCE PARA INFO Y MISION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── LÓGICA DE AUTO-AVANCE PARA INFO Y MISION ─────────────────────────
             if (paso.tipo === "INFO" || paso.tipo === "MISION") {
                 const tiempoTranscurrido = ahora - tutorialAutoStart;
                 if (tiempoTranscurrido > paso.duracion) {
                     avanzarTutorial();
-                    return; // Ya avanzÃ³, no dibujamos el paso actual
+                    return; // Ya avanzó, no dibujamos el paso actual
                 }
             }
 
-            // â”€â”€ DIBUJAR PANELES SEGÃšN EL TIPO DE PASO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── DIBUJAR PANELES SEGÚN EL TIPO DE PASO ─────────────────────────────
             if (paso.tipo === "INFO" || paso.tipo === "MISION") {
                 // Panel Central Grande
                 const panelW = 340;
@@ -3424,7 +3423,7 @@
 
                 ctx.textAlign = "left";
 
-                // Barra de progreso (para saber cuÃ¡nto falta para que avance)
+                // Barra de progreso (para saber cuánto falta para que avance)
                 const tiempoTranscurrido = ahora - tutorialAutoStart;
                 const progreso = Math.min(1, tiempoTranscurrido / paso.duracion);
                 ctx.fillStyle = paso.color;
@@ -3444,7 +3443,7 @@
                     ctx.save();
                     ctx.globalAlpha = alpha;
 
-                    // Panel Superior PequeÃ±o
+                    // Panel Superior Pequeño
                     const panelH = 50;
                     ctx.fillStyle = "rgba(10, 10, 20, 0.92)";
                     ctx.fillRect(0, 0, 480, panelH);
@@ -3487,13 +3486,13 @@
                 ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
                 ctx.fillRect(0, 0, 480, 270);
             } else {
-                // Fallback por acto si la imagen no cargÃ³
+                // Fallback por acto si la imagen no cargó
                 const coloresFallback = { 1: "#1a3320", 2: "#2a1a0e", 3: "#0d0d2b" };
                 ctx.fillStyle = coloresFallback[actoActual] || "#121218";
                 ctx.fillRect(0, 0, 480, 270);
             }
 
-            // Dibujar lÃ­neas de conexiÃ³n entre nodos (TEMPORALMENTE DESACTIVADO A PETICIÃ“N DE USUARIO)
+            // Dibujar líneas de conexión entre nodos (TEMPORALMENTE DESACTIVADO A PETICIÓN DE USUARIO)
             /*
             nodosMapa.forEach(nodo => {
                 if (!nodo.conexiones) return;
@@ -3507,12 +3506,12 @@
                     const midX = (nodo.x + dest.x) / 2;
                     const midY = (nodo.y + dest.y) / 2;
                     
-                    // Calcular el vector de direcciÃ³n y su perpendicular para el offset de la curva
+                    // Calcular el vector de dirección y su perpendicular para el offset de la curva
                     const dx = dest.x - nodo.x;
                     const dy = dest.y - nodo.y;
                     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
                     
-                    // Curvatura suave: variamos el control point desplazÃ¡ndolo en perpendicular
+                    // Curvatura suave: variamos el control point desplazándolo en perpendicular
                     const factorCurva = 0.15;
                     const cpX = midX - (dy / dist) * (dist * factorCurva);
                     const cpY = midY + (dx / dist) * (dist * factorCurva);
@@ -3543,10 +3542,10 @@
 
             // Dibujar cada uno de los nodos
             nodosMapa.forEach((nodo, index) => {
-                // El tamaÃ±o del cÃ­rculo del nodo (mÃ¡s pequeÃ±o para encajar sobre los puntos dorados)
+                // El tamaño del círculo del nodo (más pequeño para encajar sobre los puntos dorados)
                 const radioNodo = 6;
 
-                // Detectar si el cursor estÃ¡ sobre el nodo
+                // Detectar si el cursor está sobre el nodo
                 const dx = mouseX - nodo.x;
                 const dy = mouseY - nodo.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -3560,13 +3559,13 @@
                     renderRadio = radioNodo + 2; // Crece al pasar el cursor
                 }
 
-                // Color del cÃ­rculo segÃºn su estado
+                // Color del círculo según su estado
                 if (nodo.completado) {
-                    ctx.fillStyle = "#2ecc71"; // Verde si ya pasaste por ahÃ­
+                    ctx.fillStyle = "#2ecc71"; // Verde si ya pasaste por ahí
                 } else if (interactuable) {
-                    ctx.fillStyle = hover ? "#fffb00" : "#ffcc00"; // Amarillo mÃ¡s brillante con hover
+                    ctx.fillStyle = hover ? "#fffb00" : "#ffcc00"; // Amarillo más brillante con hover
                 } else {
-                    ctx.fillStyle = "#34495e"; // Gris si estÃ¡ bloqueado todavÃ­a
+                    ctx.fillStyle = "#34495e"; // Gris si está bloqueado todavía
                 }
 
                 ctx.beginPath();
@@ -3593,20 +3592,20 @@
             ctx.fillRect(nodoActual.x - 4, nodoActual.y - 4, 8, 8);
 
             // ==========================================
-            // ACTUALIZACIÃ“N DINÃMICA DEL HUD HTML (LETRAS PERFECTAS)
+            // ACTUALIZACIÓN DINÁMICA DEL HUD HTML (LETRAS PERFECTAS)
             // ==========================================
             const hudTexto = document.getElementById('hud-texto');
             let nombreBioma = "";
             let colorBioma = "#2ecc71"; // Verde por defecto
 
             if (actoActual === 1) {
-                nombreBioma = "ACTO 1: AMAZONÃA";
+                nombreBioma = "ACTO 1: AMAZONÍA";
                 colorBioma = "#2ecc71";
             } else if (actoActual === 2) {
-                nombreBioma = "ACTO 2: VALLES Y MINAS DE POTOSÃ";
+                nombreBioma = "ACTO 2: VALLES Y MINAS DE POTOSÍ";
                 colorBioma = "#e67e22";
             } else if (actoActual === 3) {
-                nombreBioma = "ACTO 3: SALAR CÃ“SMICO";
+                nombreBioma = "ACTO 3: SALAR CÓSMICO";
                 colorBioma = "#9b59b6";
             }
 
@@ -3629,7 +3628,7 @@
             ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
             ctx.fillRect(xStart - 2, yStart - 5, slotSize + 10, (slotSize * 3) + (gap * 2) + 20);
 
-            // Texto BOLSA pequeÃ±ito arriba de los slots
+            // Texto BOLSA pequeñito arriba de los slots
             ctx.fillStyle = "#ffcc00";
             ctx.font = "4px 'Press Start 2P'";
             ctx.fillText("BOLSA", xStart + 2, yStart + 2);
@@ -3679,7 +3678,7 @@
             actualizarAnimaciones();
 
             // ==========================================
-            // 1. CONFIGURACIÃ“N DE NITIDEZ (PIXEL ART)
+            // 1. CONFIGURACIÓN DE NITIDEZ (PIXEL ART)
             // ==========================================
             ctx.imageSmoothingEnabled = false;
             ctx.mozImageSmoothingEnabled = false;
@@ -3687,12 +3686,12 @@
             ctx.msImageSmoothingEnabled = false;
 
             // ==========================================
-            // 2. SELECCIÃ“N Y DIBUJO DEL FONDO (480x270)
+            // 2. SELECCIÓN Y DIBUJO DEL FONDO (480x270)
             // ==========================================
             let fondoCargado = null;
 
-            if (actoActual === 1 && imagenesCargadas.fondos && imagenesCargadas.fondos.amazonÃ­a) {
-                fondoCargado = imagenesCargadas.fondos.amazonÃ­a;
+            if (actoActual === 1 && imagenesCargadas.fondos && imagenesCargadas.fondos.amazonía) {
+                fondoCargado = imagenesCargadas.fondos.amazonía;
             } else if (actoActual === 2 && imagenesCargadas.fondos && imagenesCargadas.fondos.minas) {
                 fondoCargado = imagenesCargadas.fondos.minas;
             } else if (actoActual === 3 && imagenesCargadas.fondos && imagenesCargadas.fondos.salarJuego) {
@@ -3725,9 +3724,9 @@
             // 4. DIBUJAR AL JUGADOR (MAMANI) - PISANDO EL SUELO
             // ==========================================
             const tiempoMs = Date.now();
-            const vaivenMamani = Math.sin(tiempoMs / 300) * 2; // AnimaciÃ³n suave de respiraciÃ³n
+            const vaivenMamani = Math.sin(tiempoMs / 300) * 2; // Animación suave de respiración
 
-            // SelecciÃ³n dinÃ¡mica del sprite de Mamani segÃºn estado de animaciÃ³n
+            // Selección dinámica del sprite de Mamani según estado de animación
             let spriteMamani;
             const p = imagenesCargadas.personajes;
             if (p) {
@@ -3747,7 +3746,7 @@
                 }
             }
 
-            // Aplicar offsets de animaciÃ³n con transformaciÃ³n completa (tilt + escala)
+            // Aplicar offsets de animación con transformación completa (tilt + escala)
             const aj = animaciones.jugador;
             const hitOffsetM = aj.hitShake > 0 ? (Math.random() * aj.hitShake - aj.hitShake / 2) : 0;
             const drawX_M = 45 + aj.atkOffset + hitOffsetM;
@@ -3772,7 +3771,7 @@
             ctx.filter = 'none';
             ctx.restore();
 
-            // Barra de HP de Mamani (DiseÃ±o Premium)
+            // Barra de HP de Mamani (Diseño Premium)
             const barraAncho = 80;
             const barraAlto = 8;
             const xHp = 30;
@@ -3787,7 +3786,7 @@
             ctx.fill();
             ctx.stroke();
 
-            // 2. Ranura vacÃ­a (fondo oscuro)
+            // 2. Ranura vacía (fondo oscuro)
             ctx.fillStyle = "#110505";
             ctx.beginPath();
             ctx.roundRect(xHp, yHp, barraAncho, barraAlto, 2);
@@ -3819,16 +3818,16 @@
             ctx.restore();
 
             // ==========================================
-            // NUEVO: AP / ENERGÃA EN LA ESQUINA SUPERIOR DERECHA
+            // NUEVO: AP / ENERGÍA EN LA ESQUINA SUPERIOR DERECHA
             // ==========================================
             const xAp = 340; // Alineado al inicio de la barra de HP del enemigo
-            const yAp = 20;  // Altura superior cÃ³moda
+            const yAp = 20;  // Altura superior cómoda
             ctx.fillStyle = "#ffffff";
             ctx.font = "5px 'Press Start 2P'";
-            ctx.fillText("ENERGÃA:", xAp, yAp - 6);
+            ctx.fillText("ENERGÍA:", xAp, yAp - 6);
 
             for (let i = 0; i < jugador.apMax; i++) {
-                ctx.fillStyle = (i < jugador.ap) ? "#ffcc00" : "#7f8c8d"; // Gema dorada de energÃ­a
+                ctx.fillStyle = (i < jugador.ap) ? "#ffcc00" : "#7f8c8d"; // Gema dorada de energía
                 ctx.beginPath();
                 ctx.arc(xAp + 6 + (i * 14), yAp, 5, 0, Math.PI * 2);
                 ctx.fill();
@@ -3839,9 +3838,9 @@
 
             // ==========================================
             // ==========================================
-            // 5. DIBUJAR AL ENEMIGO (DINÃMICO)
+            // 5. DIBUJAR AL ENEMIGO (DINÁMICO)
             // ==========================================
-            const vaivenEnemigo = Math.cos(tiempoMs / 250) * 2; // RespiraciÃ³n
+            const vaivenEnemigo = Math.cos(tiempoMs / 250) * 2; // Respiración
 
             let spriteEnemigo = null;
             let drawW = 100;
@@ -3852,7 +3851,7 @@
             if (enemigo.nombre.includes("El Jichi")) {
                 spriteEnemigo = imagenesCargadas.personajes && imagenesCargadas.personajes.jichi;
                 drawW = 160; drawH = 100; drawX = 280; drawY = 95;
-            } else if (enemigo.nombre.includes("El TÃ­o de la Mina")) {
+            } else if (enemigo.nombre.includes("El Tío de la Mina")) {
                 spriteEnemigo = imagenesCargadas.personajes && imagenesCargadas.personajes.tio;
                 drawW = 150; drawH = 100; drawX = 290; drawY = 95;
             } else if (enemigo.nombre.includes("Huiracocha")) {
@@ -3907,7 +3906,7 @@
                     }
                 }
             } else {
-                // Quirquincho: sprite dinÃ¡mico segÃºn estado de animaciÃ³n
+                // Quirquincho: sprite dinámico según estado de animación
                 const qp = imagenesCargadas.personajes;
                 if (qp) {
                     const ae = animaciones.enemigo;
@@ -3946,14 +3945,14 @@
                     // Jichi Fase 2: Rojo intenso (Jichi original es verde/cian, el hue-rotate lo vuelve rojo)
                     ctx.filter = 'drop-shadow(0 0 20px rgba(255, 0, 0, 0.9)) sepia(0.8) hue-rotate(280deg) saturate(6) brightness(0.9) contrast(1.5)';
                 } else {
-                    // TÃ­o de la Mina (Rojo infernal)
+                    // Tío de la Mina (Rojo infernal)
                     ctx.filter = 'drop-shadow(0 0 15px rgba(255, 0, 0, 0.9)) sepia(0.5) hue-rotate(-40deg) saturate(4) brightness(0.9) contrast(1.5)';
                 }
             }
             if (spriteEnemigo && spriteEnemigo.complete && spriteEnemigo.naturalWidth !== 0) {
                 ctx.drawImage(spriteEnemigo, -drawW / 2, -drawH, drawW, drawH);
             } else {
-                // Quirquincho geomÃ©trico de respaldo
+                // Quirquincho geométrico de respaldo
                 ctx.fillStyle = '#d35400'; ctx.beginPath(); ctx.arc(0, -30, 22, Math.PI, 0, false); ctx.lineTo(0, -10); ctx.closePath(); ctx.fill();
                 ctx.strokeStyle = '#ba4a00'; ctx.lineWidth = 1.5;
                 for (let offset = -16; offset <= 16; offset += 5) {
@@ -3968,7 +3967,7 @@
 
             // ========== EFECTOS ESPECIALES (encima de sprites, debajo del HUD) ==========
             dibujarEfectosEspeciales();
-            // Barra de vida del Enemigo (DiseÃ±o Premium)
+            // Barra de vida del Enemigo (Diseño Premium)
             const xHpEnemigo = 340;
             const yHpEnemigo = 60;
 
@@ -3981,7 +3980,7 @@
             ctx.fill();
             ctx.stroke();
 
-            // 2. Ranura vacÃ­a (fondo oscuro)
+            // 2. Ranura vacía (fondo oscuro)
             ctx.fillStyle = "#110505";
             ctx.beginPath();
             ctx.roundRect(xHpEnemigo, yHpEnemigo, barraAncho, barraAlto, 2);
@@ -3991,7 +3990,7 @@
             const vidaEnemigoPorcentaje = enemigo.hp / enemigo.hpMax;
             if (vidaEnemigoPorcentaje > 0) {
                 let gradEnemigo = ctx.createLinearGradient(xHpEnemigo, yHpEnemigo, xHpEnemigo, yHpEnemigo + barraAlto);
-                gradEnemigo.addColorStop(0, "#ff4d4d"); // Rojo carmesÃ­ brillante
+                gradEnemigo.addColorStop(0, "#ff4d4d"); // Rojo carmesí brillante
                 gradEnemigo.addColorStop(1, "#c0392b"); // Rojo oscuro
                 ctx.fillStyle = gradEnemigo;
                 ctx.beginPath();
@@ -4019,7 +4018,7 @@
                 ctx.fillRect(xHpEnemigo, yHpEnemigo + barraAlto + 4, 65, 6);
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "3.5px 'Press Start 2P'";
-                ctx.fillText("EMPAPADO (+50% DaÃ±o Recibido)", xHpEnemigo + 4, yHpEnemigo + barraAlto + 9);
+                ctx.fillText("EMPAPADO (+50% Daño Recibido)", xHpEnemigo + 4, yHpEnemigo + barraAlto + 9);
             } else if (enemigo.estado === "DEBILITADO") {
                 ctx.fillStyle = "#9b59b6";
                 ctx.fillRect(xHpEnemigo, yHpEnemigo + barraAlto + 4, 65, 6);
@@ -4050,14 +4049,14 @@
             }
 
             // ==========================================
-            // 6. SISTEMA DE TELEGRAFÃA (Intenciones Premium)
+            // 6. SISTEMA DE TELEGRAFÍA (Intenciones Premium)
             // ==========================================
             const xTele = xHpEnemigo + barraAncho + 8;
             const yTele = yHpEnemigo - 4;
             const wTele = 24;
             const hTele = 18;
 
-            // Borde mÃ­stico dorado
+            // Borde místico dorado
             ctx.fillStyle = "#2c3e50";
             ctx.strokeStyle = "#f1c40f";
             ctx.lineWidth = 1;
@@ -4066,21 +4065,21 @@
             ctx.fill();
             ctx.stroke();
 
-            // Fondo interior degradado segÃºn intenciÃ³n
+            // Fondo interior degradado según intención
             let gradTele = ctx.createLinearGradient(xTele, yTele, xTele, yTele + hTele);
             let iconoIntencion = "";
             if (enemigo.intencion.tipo === "ATAQUE") {
                 gradTele.addColorStop(0, "#e74c3c");
                 gradTele.addColorStop(1, "#c0392b");
-                iconoIntencion = "âš”ï¸";
+                iconoIntencion = "⚔️";
             } else if (enemigo.intencion.tipo === "DEFENSA") {
                 gradTele.addColorStop(0, "#2ecc71");
                 gradTele.addColorStop(1, "#27ae60");
-                iconoIntencion = "ðŸ›¡ï¸";
+                iconoIntencion = "🛡️";
             } else {
                 gradTele.addColorStop(0, "#9b59b6");
                 gradTele.addColorStop(1, "#8e44ad");
-                iconoIntencion = "ðŸ’€";
+                iconoIntencion = "💀";
             }
             ctx.fillStyle = gradTele;
             ctx.beginPath();
@@ -4109,20 +4108,20 @@
             ctx.restore();
 
             // ==========================================
-            // 7. BOCADILLO DE DIÃLOGO INTERACTIVO (Tooltip al pasar el cursor)
+            // 7. BOCADILLO DE DIÁLOGO INTERACTIVO (Tooltip al pasar el cursor)
             // ==========================================
             const hoverIntencion = esCursorSobreBoton(xTele, yTele, wTele, hTele);
 
             if (hoverIntencion) {
                 canvas.style.cursor = "pointer";
 
-                // Posicionamos el globo a la izquierda de la intenciÃ³n para no tapar nada
+                // Posicionamos el globo a la izquierda de la intención para no tapar nada
                 const xBubble = xTele - 112;
                 const yBubble = yTele + 2;
                 const wBubble = 105;
                 const hBubble = 14;
 
-                // Borde marrÃ³n madera/tierra
+                // Borde marrón madera/tierra
                 ctx.fillStyle = "#5c3d2e";
                 ctx.beginPath();
                 ctx.roundRect(xBubble - 1, yBubble - 1, wBubble + 2, hBubble + 2, 3);
@@ -4134,7 +4133,7 @@
                 ctx.roundRect(xBubble, yBubble, wBubble, hBubble, 2);
                 ctx.fill();
 
-                // Flechita del globo de diÃ¡logo apuntando a la derecha (hacia el botÃ³n de intenciÃ³n)
+                // Flechita del globo de diálogo apuntando a la derecha (hacia el botón de intención)
                 ctx.fillStyle = "#5c3d2e";
                 ctx.beginPath();
                 ctx.moveTo(xBubble + wBubble, yBubble + hBubble / 2 - 3);
@@ -4151,7 +4150,7 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Texto marrÃ³n rojizo centrado
+                // Texto marrón rojizo centrado
                 ctx.save();
                 ctx.fillStyle = "#78281f";
                 ctx.font = "3.2px 'Press Start 2P'";
@@ -4163,7 +4162,7 @@
             // ==========================================
             // 7. BOTONES REUBICADOS (Estilo Slay)
             // ==========================================
-            // BOTÃ“N HUIR (Arriba a la izquierda, discreto)
+            // BOTÓN HUIR (Arriba a la izquierda, discreto)
             const btnHuir = UI_CONFIG.combate.huir;
             const hoverHuir = esCursorSobreBoton(btnHuir.x, btnHuir.y, btnHuir.w, btnHuir.h);
             let hy = btnHuir.y;
@@ -4183,7 +4182,7 @@
             ctx.fillText("HUIR", btnHuir.x + btnHuir.w / 2, hy + 10);
             ctx.textAlign = "left";
 
-            // BOTÃ“N END TURN (Subido un poco para evitar pisar al enemigo y al suelo)
+            // BOTÓN END TURN (Subido un poco para evitar pisar al enemigo y al suelo)
             const btnTerminar = UI_CONFIG.combate.terminarTurno;
             const hoverTerminar = esCursorSobreBoton(btnTerminar.x, btnTerminar.y, btnTerminar.w, btnTerminar.h);
             let ty = btnTerminar.y;
@@ -4203,7 +4202,7 @@
             ctx.fillText("TURNO", btnTerminar.x + 16, ty + 17);
 
             // ==========================================
-            // 8. MANO DE CARTAS â€” LAYOUT PLANO HORIZONTAL CENTRADO
+            // 8. MANO DE CARTAS — LAYOUT PLANO HORIZONTAL CENTRADO
             // ==========================================
             const categorias = ["ofensiva", "defensiva", "elemental", "mejora", "nerfeo"];
             const cfgMano = UI_CONFIG.mano;
@@ -4213,7 +4212,7 @@
             const manoXInicial = cfgMano.xInicial;
             const manoY = cfgMano.yBase;
 
-            // Panel de fondo con padding cÃ³modo para que las cartas no toquen el borde
+            // Panel de fondo con padding cómodo para que las cartas no toquen el borde
             const PANEL_PAD_H = 10; // padding horizontal interno
             const PANEL_PAD_V = 6;  // padding vertical interno
             const panelW2 = categorias.length * (cartaAncho + espacioEntreCartas) - espacioEntreCartas + PANEL_PAD_H * 2;
@@ -4229,7 +4228,7 @@
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Momento actual para animaciones de selecciÃ³n
+            // Momento actual para animaciones de selección
             const tiempoSeleccion = Date.now();
             // Pulso suave: oscila entre 0 y 1 cada ~600ms
             const pulsoSel = (Math.sin(tiempoSeleccion / 200) + 1) / 2;
@@ -4238,19 +4237,19 @@
                 const carta = jugador.mano[cat];
                 const estaSeleccionada = (cartaSeleccionadaIndex === index);
 
-                // PosiciÃ³n X fija
+                // Posición X fija
                 const cx = manoXInicial + index * (cartaAncho + espacioEntreCartas);
-                // PosiciÃ³n Y: solo sube si estÃ¡ seleccionada
+                // Posición Y: solo sube si está seleccionada
                 const cyBase = manoY;
                 const cy = estaSeleccionada ? cyBase - 20 : cyBase;
 
-                // Cursor pointer al pasar sobre carta vÃ¡lida
+                // Cursor pointer al pasar sobre carta válida
                 if (carta !== null && mouseX >= cx && mouseX <= cx + cartaAncho && mouseY >= cyBase - 2 && mouseY <= cyBase + cartaAlto) {
                     canvas.style.cursor = "pointer";
                 }
 
                 if (carta === null) {
-                    // â”€â”€ Ranura bloqueada (estÃ©tica premium) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ── Ranura bloqueada (estética premium) ──────────────────
                     // Fondo muy oscuro con gradiente
                     const gLocked = ctx.createLinearGradient(cx, cyBase, cx, cyBase + cartaAlto);
                     gLocked.addColorStop(0, "rgba(12,8,3,0.88)");
@@ -4258,26 +4257,26 @@
                     ctx.fillStyle = gLocked;
                     ctx.beginPath(); ctx.roundRect(cx, cyBase, cartaAncho, cartaAlto, 4); ctx.fill();
 
-                    // Borde punteado Ã¡mbar oscuro
+                    // Borde punteado ámbar oscuro
                     ctx.strokeStyle = "rgba(120,75,10,0.5)";
                     ctx.lineWidth = 1;
                     ctx.setLineDash([3, 3]);
                     ctx.beginPath(); ctx.roundRect(cx, cyBase, cartaAncho, cartaAlto, 4); ctx.stroke();
                     ctx.setLineDash([]);
 
-                    // Ãcono de candado (emoji grande centrado)
+                    // Ícono de candado (emoji grande centrado)
                     ctx.font = "16px serif";
                     ctx.textAlign = "center";
                     ctx.globalAlpha = 0.45;
-                    ctx.fillText("ðŸ”’", cx + cartaAncho / 2, cyBase + cartaAlto / 2 - 4);
+                    ctx.fillText("🔒", cx + cartaAncho / 2, cyBase + cartaAlto / 2 - 4);
                     ctx.globalAlpha = 1;
 
-                    // Texto "TIENDA" pequeÃ±o debajo
+                    // Texto "TIENDA" pequeño debajo
                     ctx.fillStyle = "rgba(160,100,20,0.7)";
                     ctx.font = "2.8px 'Press Start 2P'";
                     ctx.fillText("TIENDA", cx + cartaAncho / 2, cyBase + cartaAlto / 2 + 10);
 
-                    // CategorÃ­a en la parte superior
+                    // Categoría en la parte superior
                     const catLabel = cat === 'elemental' ? 'ELEME.' : cat === 'mejora' ? 'MEJORA' : cat.toUpperCase();
                     ctx.fillStyle = "rgba(120,75,10,0.6)";
                     ctx.font = "2.5px 'Press Start 2P'";
@@ -4291,7 +4290,7 @@
                         ctx.globalAlpha = 0.4;
                     }
 
-                    // Colores por categorÃ­a
+                    // Colores por categoría
                     let colorBorde = "#e74c3c";
                     let colorFondo = "#2c1c1c";
                     let colorTop = "#ff6b6b";
@@ -4318,7 +4317,7 @@
                     ctx.roundRect(cx, cy, cartaAncho, cartaAlto, 4);
                     ctx.fill();
 
-                    // Borde interior (mÃ¡s grueso y dorado si estÃ¡ seleccionada)
+                    // Borde interior (más grueso y dorado si está seleccionada)
                     if (estaSeleccionada) {
                         ctx.strokeStyle = "#ffcc00";
                         ctx.lineWidth = 2.5;
@@ -4330,7 +4329,7 @@
                     ctx.roundRect(cx, cy, cartaAncho, cartaAlto, 4);
                     ctx.stroke();
 
-                    // Barra de color superior (etiqueta de categorÃ­a)
+                    // Barra de color superior (etiqueta de categoría)
                     ctx.fillStyle = estaSeleccionada ? "#ffcc00" : colorBorde;
                     ctx.beginPath();
                     ctx.roundRect(cx, cy, cartaAncho, 7, [4, 4, 0, 0]);
@@ -4351,7 +4350,7 @@
                         ctx.textAlign = "left";
                     }
 
-                    // Ãcono ilustrativo segÃºn categorÃ­a
+                    // Ícono ilustrativo según categoría
                     let iconKey = cat;
                     if (cat === 'ofensiva') iconKey = 'ataque';
                     if (cat === 'defensiva') iconKey = 'defensa';
@@ -4401,13 +4400,13 @@
                     ctx.fillText(carta.costoAP, gemaX, gemaY + 1.5);
                     ctx.textAlign = "left";
 
-                    // Indicador "â–¼ JUGAR" encima de la carta seleccionada (pulso suave)
+                    // Indicador "▼ JUGAR" encima de la carta seleccionada (pulso suave)
                     if (estaSeleccionada) {
                         const alfaLabel = 0.7 + pulsoSel * 0.3; // 0.7 a 1.0
                         ctx.fillStyle = `rgba(255, 220, 0, ${alfaLabel})`;
                         ctx.font = "3.5px 'Press Start 2P'";
                         ctx.textAlign = "center";
-                        ctx.fillText("â–¼ JUGAR", cx + cartaAncho / 2, cy - 3);
+                        ctx.fillText("▼ JUGAR", cx + cartaAncho / 2, cy - 3);
                         ctx.textAlign = "left";
                     }
 
@@ -4415,7 +4414,7 @@
                 }
             });
 
-            // Dibujar Escudo activo de Mamani si es mayor a 0 (DiseÃ±o Premium)
+            // Dibujar Escudo activo de Mamani si es mayor a 0 (Diseño Premium)
             if (jugador.escudo > 0) {
                 const xEsc = xHp + barraAncho + 6;
                 const yEsc = yHp - 1;
@@ -4430,7 +4429,7 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Fondo azul metÃ¡lico
+                // Fondo azul metálico
                 let gradEsc = ctx.createLinearGradient(xEsc, yEsc, xEsc, yEsc + barraAlto + 2);
                 gradEsc.addColorStop(0, "#3498db");
                 gradEsc.addColorStop(1, "#2980b9");
@@ -4449,14 +4448,14 @@
                 ctx.shadowBlur = 3;
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "4px 'Press Start 2P'";
-                ctx.fillText("ðŸ›¡ï¸+" + jugador.escudo, xEsc + 2, yEsc + 7);
+                ctx.fillText("🛡️+" + jugador.escudo, xEsc + 2, yEsc + 7);
                 ctx.restore();
             }
 
             // (Textos flotantes y efectos son renderizados por dibujarEfectosEspeciales())
 
             // ==========================================
-            // BANNER DE MISIÃ“N AL INICIAR COMBATE
+            // BANNER DE MISIÓN AL INICIAR COMBATE
             // ==========================================
             if (tiempoMisionCombate > 0) {
                 const tiempoTranscurrido = Date.now() - tiempoMisionCombate;
@@ -4484,16 +4483,16 @@
                     ctx.roundRect(banX, banY, banW, banH, 6);
                     ctx.fill();
 
-                    // Borde de color misiÃ³n (rojo/naranja)
+                    // Borde de color misión (rojo/naranja)
                     ctx.strokeStyle = "#e74c3c";
                     ctx.lineWidth = 2;
                     ctx.stroke();
 
-                    // TÃ­tulo principal
+                    // Título principal
                     ctx.fillStyle = "#ffcc00";
                     ctx.font = "10px 'Press Start 2P'";
                     ctx.textAlign = "center";
-                    ctx.fillText("Â¡NUEVA MISIÃ“N: COMBATE!", 240, banY + 25);
+                    ctx.fillText("¡NUEVA MISIÓN: COMBATE!", 240, banY + 25);
 
                     // Texto descriptivo
                     ctx.fillStyle = "#ffffff";
@@ -4505,11 +4504,11 @@
                 }
             }
 
-            // Dibujar inventario tambiÃ©n en combate
+            // Dibujar inventario también en combate
             dibujarInventario();
         }
         function dibujarPantallaVictoria() {
-            // â”€â”€ Fondo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Fondo ────────────────────────────────────────────────────────
             const grad = ctx.createLinearGradient(0, 0, 0, 270);
             grad.addColorStop(0, "#0d1f0d");
             grad.addColorStop(0.5, "#1a2e1a");
@@ -4517,7 +4516,7 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 480, 270);
 
-            // PartÃ­culas decorativas doradas
+            // Partículas decorativas doradas
             const t = Date.now() / 600;
             const particulas = [
                 [45, 25], [100, 18], [180, 10], [260, 22], [340, 14], [410, 28], [455, 20],
@@ -4531,21 +4530,21 @@
                 ctx.fillRect(p[0], p[1], size, size);
             });
 
-            // â”€â”€ Corona / Trofeo decorativo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Corona / Trofeo decorativo ────────────────────────────────────
             ctx.save();
             ctx.textAlign = "center";
             ctx.font = "30px serif";
             ctx.fillStyle = "#f1c40f";
-            ctx.fillText("ðŸ‘‘", 240, 68);
+            ctx.fillText("👑", 240, 68);
             ctx.restore();
 
-            // â”€â”€ TÃ­tulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Título ────────────────────────────────────────────────────────
             ctx.textAlign = "center";
             ctx.fillStyle = "#ffdd00";
             ctx.font = "11px 'Press Start 2P'";
-            ctx.fillText("Â¡VICTORIA!", 240, 100);
+            ctx.fillText("¡VICTORIA!", 240, 100);
 
-            // LÃ­nea decorativa
+            // Línea decorativa
             ctx.strokeStyle = "rgba(255, 200, 0, 0.4)";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -4553,7 +4552,7 @@
             ctx.lineTo(380, 112);
             ctx.stroke();
 
-            // â”€â”€ Nombre del enemigo derrotado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Nombre del enemigo derrotado ──────────────────────────────────
             ctx.fillStyle = "#e0e0e0";
             ctx.font = "5.5px 'Press Start 2P'";
             ctx.fillText("Has derrotado a:", 240, 130);
@@ -4562,29 +4561,29 @@
             ctx.font = "7px 'Press Start 2P'";
             ctx.fillText(nombreEnemigoVencido, 240, 148);
 
-            // â”€â”€ Recompensas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Recompensas ───────────────────────────────────────────────────
             ctx.fillStyle = "#a8d8a8";
             ctx.font = "5px 'Press Start 2P'";
             ctx.fillText("La Pachamama te recompensa...", 240, 175);
 
             ctx.fillStyle = "#888888";
             ctx.font = "4px 'Press Start 2P'";
-            ctx.fillText("PodrÃ¡s elegir una carta para tu mazo", 240, 190);
+            ctx.fillText("Podrás elegir una carta para tu mazo", 240, 190);
 
-            // â”€â”€ BotÃ³n continuar (parpadeo) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Botón continuar (parpadeo) ────────────────────────────────────
             if (Math.floor(t * 2) % 2 === 0) {
                 ctx.fillStyle = "#ffcc00";
                 ctx.font = "5px 'Press Start 2P'";
-                ctx.fillText("â€” Haz clic para continuar â€”", 240, 240);
+                ctx.fillText("— Haz clic para continuar —", 240, 240);
             }
 
             ctx.textAlign = "left";
         }
         function dibujarPantallaRecompensa() {
-            // Indicar si hay algÃºn botÃ³n en hover para cambiar el cursor
+            // Indicar si hay algún botón en hover para cambiar el cursor
             let hoverBotonGeneral = false;
 
-            // â”€â”€ Fondo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Fondo ────────────────────────────────────────────────────────
             const grad = ctx.createLinearGradient(0, 0, 0, 270);
             grad.addColorStop(0, "#081c15"); // Verde profundo
             grad.addColorStop(0.5, "#1b4332"); // Verde bosque
@@ -4592,7 +4591,7 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 480, 270);
 
-            // PartÃ­culas decorativas animadas
+            // Partículas decorativas animadas
             const t = Date.now() / 600;
             const particulas = [
                 [30, 40], [80, 25], [140, 15], [200, 30], [280, 20], [360, 35], [420, 25],
@@ -4606,21 +4605,21 @@
                 ctx.fillRect(p[0], p[1], size, size);
             });
 
-            // ðŸ‘‘ Corona / Trofeo decorativo ðŸ‘‘
+            // 👑 Corona / Trofeo decorativo 👑
             ctx.save();
             ctx.textAlign = "center";
             ctx.font = "28px serif";
             ctx.fillStyle = "#f1c40f";
-            ctx.fillText("ðŸ‘‘", 240, 35);
+            ctx.fillText("👑", 240, 35);
             ctx.restore();
 
-            // â”€â”€ TÃ­tulo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Título ────────────────────────────────────────────────────────
             ctx.textAlign = "center";
             ctx.fillStyle = esRecompensaJefe ? "#f1c40f" : "#ffdd00";
             ctx.font = "10px 'Press Start 2P'";
-            ctx.fillText(esRecompensaJefe ? "Â¡VICTORIA Ã‰PICA!" : "Â¡VICTORIA!", 240, 55);
+            ctx.fillText(esRecompensaJefe ? "¡VICTORIA ÉPICA!" : "¡VICTORIA!", 240, 55);
 
-            // LÃ­nea decorativa
+            // Línea decorativa
             ctx.strokeStyle = "rgba(255, 200, 0, 0.4)";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -4628,7 +4627,7 @@
             ctx.lineTo(380, 65);
             ctx.stroke();
 
-            // â”€â”€ Nombre del enemigo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Nombre del enemigo ──────────────────────────────────────────
             ctx.fillStyle = "#e0e0e0";
             ctx.font = "5px 'Press Start 2P'";
             ctx.fillText("Has derrotado a:", 240, 80);
@@ -4637,13 +4636,13 @@
             ctx.font = "7px 'Press Start 2P'";
             ctx.fillText(nombreEnemigoVencido, 240, 93);
 
-            // â”€â”€ Recompensas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Recompensas ───────────────────────────────────────────────────
             ctx.fillStyle = "#f39c12";
             ctx.font = "6px 'Press Start 2P'";
             ctx.fillText("\uD83D\uDCB0 Oro obtenido: +" + oroRecompensa + "G", 240, 110);
 
             if (esRecompensaJefe && reliquiaJefeObtenida) {
-                // â”€â”€ Panel de reliquia de jefe (carta directa al mazo) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Panel de reliquia de jefe (carta directa al mazo) ─────────
                 const rx = 100, ry = 120, rw = 280, rh = 74;
                 const gReliq = ctx.createLinearGradient(rx, ry, rx, ry + rh);
                 gReliq.addColorStop(0, "rgba(80,50,0,0.95)");
@@ -4667,7 +4666,7 @@
                 ctx.fillStyle = "#ffffff"; ctx.font = "6px 'Press Start 2P'";
                 ctx.fillText(reliquiaJefeObtenida.nombre, 240, ry + 35);
 
-                // DescripciÃ³n
+                // Descripción
                 ctx.fillStyle = "#c0a060"; ctx.font = "3.8px 'Press Start 2P'";
                 ctx.fillText(reliquiaJefeObtenida.descripcion || "", 240, ry + 51);
 
@@ -4688,10 +4687,10 @@
 
             const cfgR = UI_CONFIG.recompensa;
 
-            // â”€â”€ BotÃ³n Continuar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Botón Continuar ──────────────────────────────────────────────────
             const btnOmitir = cfgR.omitir;
-            btnOmitir.x = 240 - (btnOmitir.w / 2); // Centrar el botÃ³n
-            btnOmitir.y = esRecompensaJefe ? 205 : 165; // MÃ¡s abajo si hay reliquia
+            btnOmitir.x = 240 - (btnOmitir.w / 2); // Centrar el botón
+            btnOmitir.y = esRecompensaJefe ? 205 : 165; // Más abajo si hay reliquia
             const hoverOmitir = (mouseX >= btnOmitir.x && mouseX <= btnOmitir.x + btnOmitir.w &&
                 mouseY >= btnOmitir.y && mouseY <= btnOmitir.y + btnOmitir.h);
 
@@ -4729,7 +4728,7 @@
         function dibujarPantallaTienda() {
             let hoverBotonGeneral = false;
 
-            // â”€â”€ FONDO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── FONDO ──────────────────────────────────────────────────────────
             const nodoTienda = nodosMapa[nodoActualIndex];
             const datosTienda = {
                 1: {
@@ -4750,7 +4749,7 @@
                 ctx.fillStyle = gBg; ctx.fillRect(0, 0, 480, 270);
             }
 
-            // PartÃ­culas de polvo de mercado
+            // Partículas de polvo de mercado
             const tP = Date.now() / 900;
             [[28, 18], [85, 9], [155, 22], [225, 6], [305, 19], [385, 11], [450, 23],
             [50, 254], [140, 247], [215, 258], [300, 251], [395, 256], [455, 249]].forEach(([sx, sy], si) => {
@@ -4759,7 +4758,7 @@
                 ctx.beginPath(); ctx.arc(sx, sy, si % 3 === 0 ? 1.5 : 1, 0, Math.PI * 2); ctx.fill();
             });
 
-            // â”€â”€ TOP: ORO | TÃTULO | SALIR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── TOP: ORO | TÍTULO | SALIR ───────────────────────────────────────
             ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 5;
             ctx.fillStyle = "#f1c40f"; ctx.font = "5px 'Press Start 2P'"; ctx.textAlign = "left";
             ctx.fillText("\uD83D\uDCB0 " + jugador.oro + "G", 8, 13);
@@ -4777,13 +4776,13 @@
             ctx.fillStyle = "#fff"; ctx.font = "5px 'Press Start 2P'"; ctx.textAlign = "center";
             ctx.fillText("SALIR", btnV.x + btnV.w / 2, btnV.y + 12);
 
-            // â”€â”€ PESTAÃ‘AS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── PESTAÑAS ────────────────────────────────────────────────────────
             ctx.textAlign = "left";
             UI_CONFIG.tienda.tabs.forEach(tab => {
                 const isSel = (pestanaTiendaActual === tab.id);
                 const hov = esCursorSobreBoton(tab.x, tab.y, tab.w, tab.h);
                 if (hov) hoverBotonGeneral = true;
-                // Fondo de pestaÃ±a
+                // Fondo de pestaña
                 ctx.fillStyle = isSel ? "#f1c40f" : (hov ? "rgba(80,50,10,0.92)" : "rgba(20,10,2,0.88)");
                 ctx.strokeStyle = isSel ? "#ffcc00" : (hov ? "#c07020" : "#4a2a08");
                 ctx.lineWidth = isSel ? 2 : 1;
@@ -4794,7 +4793,7 @@
             });
             ctx.textAlign = "left";
 
-            // â”€â”€ CONTENIDO: PASIVAS (2x2 grid de buffs por niveles) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── CONTENIDO: PASIVAS (2x2 grid de buffs por niveles) ──────────────
             if (pestanaTiendaActual === 'pasivas') {
                 const BL = [{ x: 12, y: 48 }, { x: 250, y: 48 }, { x: 12, y: 132 }, { x: 250, y: 132 }];
                 const BW = 210, BH = 74;
@@ -4827,7 +4826,7 @@
                     // Estrellas de nivel
                     for (let s = 0; s < maxNv; s++) {
                         ctx.fillStyle = s < nv ? buff.color : "#2a1808"; ctx.font = "11px serif";
-                        ctx.fillText("â˜…", bx + 30 + s * 15, by + 33);
+                        ctx.fillText("★", bx + 30 + s * 15, by + 33);
                     }
                     // Nivel texto
                     ctx.fillStyle = "#a07030"; ctx.font = "3.5px 'Press Start 2P'";
@@ -4853,7 +4852,7 @@
                 });
 
             } else {
-                // â”€â”€ CONTENIDO: OBJETOS / MAZO (4 cartas estilo Andino) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── CONTENIDO: OBJETOS / MAZO (4 cartas estilo Andino) ──────────
                 const items = itemsTiendaActuales[pestanaTiendaActual] || [];
                 const CW = 100, CH = 148, GAP = 12;
                 const startX = Math.floor((480 - (4 * CW + 3 * GAP)) / 2);  // = 22
@@ -4871,7 +4870,7 @@
                         const hov = esCursorSobreBoton(cx, cy, CW, CH);
                         if (hov) hoverBotonGeneral = true;
 
-                        // Color de acento por tipo/categorÃ­a
+                        // Color de acento por tipo/categoría
                         let acent = "#e67e22", acentDark = "rgba(90,35,5,0.50)";
                         const cat = item.categoria || "";
                         if (cat.includes('defen') || (item.desc || '').includes('Def')) { acent = "#3498db"; acentDark = "rgba(8,28,70,0.50)"; }
@@ -4880,7 +4879,7 @@
                         else if (cat.includes('nerfeo')) { acent = "#8e44ad"; acentDark = "rgba(40,5,60,0.50)"; }
                         else if (cat.includes('ofens')) { acent = "#e74c3c"; acentDark = "rgba(80,10,10,0.50)"; }
 
-                        // Fondo de carta (gradiente cÃ¡lido oscuro)
+                        // Fondo de carta (gradiente cálido oscuro)
                         const gCard = ctx.createLinearGradient(cx, cy, cx, cy + CH);
                         if (isSel) {
                             gCard.addColorStop(0, "#201205");
@@ -4899,11 +4898,11 @@
                         ctx.beginPath(); ctx.roundRect(cx, cy, CW, CH, 7); ctx.stroke();
                         ctx.shadowBlur = 0;
 
-                        // LÃ­nea de acento superior (color de tipo)
+                        // Línea de acento superior (color de tipo)
                         ctx.strokeStyle = acent; ctx.lineWidth = 2;
                         ctx.beginPath(); ctx.moveTo(cx + 10, cy + 1.5); ctx.lineTo(cx + CW - 10, cy + 1.5); ctx.stroke();
 
-                        // Ãrea de icono (panel interior oscuro con tinte de color)
+                        // Área de icono (panel interior oscuro con tinte de color)
                         ctx.fillStyle = acentDark;
                         ctx.beginPath(); ctx.roundRect(cx + 3, cy + 4, CW - 6, 60, 4); ctx.fill();
 
@@ -4933,7 +4932,7 @@
                             ctx.drawImage(imgItem, cx + CW / 2 - 28, cy + 6, 56, 56);
                         } else {
                             ctx.font = "24px serif";
-                            ctx.fillText(item.emoji || (item.carta ? "ðŸƒ" : "âœ¨"), cx + CW / 2, cy + 37);
+                            ctx.fillText(item.emoji || (item.carta ? "🃏" : "✨"), cx + CW / 2, cy + 37);
                         }
 
                         // Nombre de la carta
@@ -4942,7 +4941,7 @@
                         const nm = (item.nombre || (item.carta && item.carta.nombre) || "?");
                         ctx.fillText(nm, cx + CW / 2, cy + 76);
 
-                        // DescripciÃ³n
+                        // Descripción
                         ctx.fillStyle = "#907040"; ctx.font = "3.2px 'Press Start 2P'";
                         const ds = (item.desc || (item.carta && item.carta.descripcion) || "");
                         ctx.fillText(ds, cx + CW / 2, cy + 89);
@@ -4955,7 +4954,7 @@
                         ctx.fillStyle = "#f1c40f"; ctx.font = "4.5px 'Press Start 2P'";
                         ctx.fillText("\uD83D\uDCB0 " + item.costo + "G", cx + CW / 2, cy + 116);
 
-                        // Tag de tipo (pequeÃ±o, color de acento)
+                        // Tag de tipo (pequeño, color de acento)
                         ctx.fillStyle = acent + "cc"; ctx.font = "3px 'Press Start 2P'";
                         const tipoTag = item.tipo || (item.carta && item.carta.tipo) || "";
                         ctx.fillText(tipoTag, cx + CW / 2, cy + 130);
@@ -4965,7 +4964,7 @@
                 }
             }
 
-            // â”€â”€ BOTONES INFERIORES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── BOTONES INFERIORES ────────────────────────────────────────────────
 
             // CAMBIAR (solo objetos y mazo)
             if (pestanaTiendaActual !== 'pasivas') {
@@ -4982,7 +4981,7 @@
                 ctx.fillText("\u21BA CAMBIAR (" + costoReemplazar + "G)", bC.x + bC.w / 2, bC.y + 16);
             }
 
-            // COMPRAR (siempre visible, activo si hay selecciÃ³n y oro suficiente)
+            // COMPRAR (siempre visible, activo si hay selección y oro suficiente)
             const haySel = !!itemSeleccionadoTienda;
             let costoSel = 0;
             if (haySel) {
@@ -5012,14 +5011,14 @@
             else canvas.style.cursor = "default";
         }
 
-        // PartÃ­culas del humo de la k'oa (incienso andino) para el evento
+        // Partículas del humo de la k'oa (incienso andino) para el evento
         let particulasKoa = [];
 
         function dibujarPantallaEvento() {
             let hoverBotonGeneral = false;
             const ahora = performance.now();
 
-            // â”€â”€ 1. Fondo MÃ­stico Andino (DinÃ¡mico segÃºn el nodo del Acto 1) â”€â”€
+            // ── 1. Fondo Místico Andino (Dinámico según el nodo del Acto 1) ──
             const claveFondoActo = `evento_bg_${actoActual}_${nodoActualIndex}`;
             const claveFondoOriginal = `evento_bg_${nodoActualIndex}`;
             const fondoEvento = imagenesCargadas.fondos && (imagenesCargadas.fondos[claveFondoActo] || imagenesCargadas.fondos[claveFondoOriginal] || imagenesCargadas.fondos.evento);
@@ -5029,8 +5028,8 @@
                 ctx.drawImage(fondoEvento, 0, 0, 480, 270);
             } else {
                 const gradiente = ctx.createLinearGradient(0, 0, 0, 270);
-                gradiente.addColorStop(0, "#08060c"); // Negro-pÃºrpura muy oscuro
-                gradiente.addColorStop(0.5, "#180e29"); // PÃºrpura mÃ­stico
+                gradiente.addColorStop(0, "#08060c"); // Negro-púrpura muy oscuro
+                gradiente.addColorStop(0.5, "#180e29"); // Púrpura místico
                 gradiente.addColorStop(1, "#0a1128"); // Azul noche profundo
                 ctx.fillStyle = gradiente;
                 ctx.fillRect(0, 0, 480, 270);
@@ -5040,7 +5039,7 @@
             if (!tieneFondoImagen) {
                 const pulsoResplandor = 60 + Math.sin(ahora * 0.002) * 10;
                 const resplandor = ctx.createRadialGradient(370, 110, 10, 370, 110, pulsoResplandor);
-                resplandor.addColorStop(0, "rgba(155, 89, 182, 0.3)"); // PÃºrpura brillante
+                resplandor.addColorStop(0, "rgba(155, 89, 182, 0.3)"); // Púrpura brillante
                 resplandor.addColorStop(1, "rgba(8, 6, 12, 0)");
                 ctx.fillStyle = resplandor;
                 ctx.beginPath();
@@ -5048,7 +5047,7 @@
                 ctx.fill();
             }
 
-            // Generar partÃ­culas de humo de k'oa (brasas rituales, se elevan desde el sahumerio en cÃ³digo o desde la fogata del pixel art)
+            // Generar partículas de humo de k'oa (brasas rituales, se elevan desde el sahumerio en código o desde la fogata del pixel art)
             const origenX = tieneFondoImagen ? 240 : 370; // en el centro para el pixel art, a la derecha para la silueta
             const origenY = tieneFondoImagen ? 200 : 137;
 
@@ -5064,9 +5063,9 @@
                 });
             }
 
-            // Dibujar y actualizar partÃ­culas
+            // Dibujar y actualizar partículas
             particulasKoa.forEach((p, idx) => {
-                p.x += p.vx + Math.sin(ahora * 0.005 + idx) * 0.1; // vaivÃ©n
+                p.x += p.vx + Math.sin(ahora * 0.005 + idx) * 0.1; // vaivén
                 p.y += p.vy;
                 p.life -= p.decay;
 
@@ -5080,10 +5079,10 @@
                 }
             });
 
-            // â”€â”€ 2. Dibujo ArtÃ­stico del Yatiri / Sahumerio (SOLO si NO hay fondo de imagen activo) â”€â”€
+            // ── 2. Dibujo Artístico del Yatiri / Sahumerio (SOLO si NO hay fondo de imagen activo) ──
             if (!tieneFondoImagen) {
                 // Mesa de ofrenda (sahumerio)
-                ctx.fillStyle = "#3e2723"; // Madera marrÃ³n
+                ctx.fillStyle = "#3e2723"; // Madera marrón
                 ctx.fillRect(350, 140, 40, 6);
                 ctx.fillStyle = "#271510";
                 ctx.fillRect(355, 146, 30, 20); // Soporte
@@ -5098,9 +5097,9 @@
                 ctx.fillStyle = "rgba(230, 126, 34, " + pulsoFuego + ")";
                 ctx.fillRect(368, 136, 4, 2);
 
-                // Silueta del Yatiri en meditaciÃ³n (Lado derecho, x=370, y=110)
-                // TÃºnica
-                ctx.fillStyle = "#4a148c"; // PÃºrpura oscuro
+                // Silueta del Yatiri en meditación (Lado derecho, x=370, y=110)
+                // Túnica
+                ctx.fillStyle = "#4a148c"; // Púrpura oscuro
                 ctx.beginPath();
                 ctx.moveTo(350, 135);
                 ctx.lineTo(390, 135);
@@ -5138,18 +5137,18 @@
                 ctx.fill();
             }
 
-            // â”€â”€ 3. Obtener datos del evento segÃºn nodo actual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── 3. Obtener datos del evento según nodo actual ──────────────────
             const claveEvento = `${actoActual}_${nodoActualIndex}`;
             const eventoActual = EVENTOS_POR_NODO[claveEvento] || EVENTO_YATIRI_FALLBACK;
 
-            // â”€â”€ 4. Panel de Narrativa en el lateral izquierdo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── 4. Panel de Narrativa en el lateral izquierdo ───────────────────
             // Deja el lateral derecho (x > 225) totalmente libre para ver el fondo pixel art completo
             const px = 15, py = 15;
             const pw = 210, ph = 240;
 
-            // Fondo translÃºcido del panel
+            // Fondo translúcido del panel
             ctx.fillStyle = "rgba(8, 6, 15, 0.65)";
-            ctx.strokeStyle = "#9b59b6"; // Borde principal pÃºrpura
+            ctx.strokeStyle = "#9b59b6"; // Borde principal púrpura
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             if (ctx.roundRect) ctx.roundRect(px, py, pw, ph, 8);
@@ -5165,7 +5164,7 @@
             else ctx.rect(px + 4, py + 4, pw - 8, ph - 8);
             ctx.stroke();
 
-            // TÃ­tulo con contorno
+            // Título con contorno
             ctx.strokeStyle = "#000000";
             ctx.lineWidth = 2.5;
             ctx.lineJoin = "round";
@@ -5182,7 +5181,7 @@
             ctx.lineTo(px + pw - 12, py + 28);
             ctx.stroke();
 
-            // Word-wrap para la descripciÃ³n
+            // Word-wrap para la descripción
             function wrapText(text, maxChars) {
                 const words = text.replace(/\n/g, " \n ").split(" ");
                 let lines = [];
@@ -5203,7 +5202,7 @@
                 return lines;
             }
 
-            // Dibujar descripciÃ³n
+            // Dibujar descripción
             ctx.font = "4px 'Press Start 2P'";
             const descLines = wrapText(eventoActual.descripcion, 32);
             descLines.forEach((linea, index) => {
@@ -5212,7 +5211,7 @@
                 ctx.fillText(linea, px + 12, py + 42 + (index * 9));
             });
 
-            // LÃ­nea decorativa intermedia sobre las opciones
+            // Línea decorativa intermedia sobre las opciones
             ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
             ctx.lineWidth = 0.75;
             ctx.beginPath();
@@ -5220,7 +5219,7 @@
             ctx.lineTo(px + pw - 12, 146);
             ctx.stroke();
 
-            // â”€â”€ 5. Botones de Opciones apilados en el panel izquierdo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── 5. Botones de Opciones apilados en el panel izquierdo ──────────────
             const w = UI_CONFIG.evento.opcionAncho;
             const h = UI_CONFIG.evento.opcionAlto;
             eventoActual.opciones.forEach((opcion, idx) => {
@@ -5228,17 +5227,17 @@
                 let oy = opcion.y;
                 if (hover) {
                     hoverBotonGeneral = true;
-                    oy -= 2; // ElevaciÃ³n
+                    oy -= 2; // Elevación
                 }
 
-                // Sombra de elevaciÃ³n en hover
+                // Sombra de elevación en hover
                 ctx.save();
                 if (hover) {
                     ctx.shadowColor = "#f1c40f";
                     ctx.shadowBlur = 8;
                 }
 
-                // Caja del botÃ³n
+                // Caja del botón
                 ctx.fillStyle = hover ? "rgba(45, 30, 60, 0.96)" : "rgba(18, 12, 28, 0.90)";
                 ctx.strokeStyle = hover ? "#f1c40f" : "#9b59b6";
                 ctx.lineWidth = hover ? 1.75 : 1;
@@ -5249,21 +5248,21 @@
                 ctx.stroke();
                 ctx.restore();
 
-                // Icono contextual segÃºn opciÃ³n
-                let icono = "ðŸŒ¿";
+                // Icono contextual según opción
+                let icono = "🌿";
                 const txtLower = opcion.texto.toLowerCase();
-                if (txtLower.includes("huir")) icono = "ðŸƒ";
-                else if (txtLower.includes("domar")) icono = "ðŸ¯";
-                else if (txtLower.includes("beber")) icono = "ðŸ’§";
-                else if (txtLower.includes("ofrenda")) icono = "ðŸª™";
-                else if (txtLower.includes("rezar")) icono = "ðŸ™";
-                else if (idx === 1) icono = "â›°ï¸";
+                if (txtLower.includes("huir")) icono = "🏃";
+                else if (txtLower.includes("domar")) icono = "🐯";
+                else if (txtLower.includes("beber")) icono = "💧";
+                else if (txtLower.includes("ofrenda")) icono = "🪙";
+                else if (txtLower.includes("rezar")) icono = "🙏";
+                else if (idx === 1) icono = "⛰️";
 
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "12px serif";
                 ctx.fillText(icono, opcion.x + 8, oy + 21);
 
-                // Texto del botÃ³n (con centrado vertical y auto wrap de dos lÃ­neas si es muy largo)
+                // Texto del botón (con centrado vertical y auto wrap de dos líneas si es muy largo)
                 const optLines = wrapText(opcion.texto, 25);
                 ctx.font = "4px 'Press Start 2P'";
 
@@ -5321,7 +5320,7 @@
             ctx.fillText("Pero el espiritu andino nunca se rinde.", 240, 150);
             ctx.restore();
 
-            // BotÃ³n para reintentar
+            // Botón para reintentar
             const btn = UI_CONFIG.gameOver.reintentar;
             const hover = esCursorSobreBoton(btn.x, btn.y, btn.w, btn.h);
             let by = btn.y;
@@ -5362,7 +5361,7 @@
 
 
 
-            // TÃ­tulo de la pantalla
+            // Título de la pantalla
             ctx.save();
             ctx.shadowColor = "#ffcc00";
             ctx.shadowBlur = 4;
@@ -5374,14 +5373,14 @@
             ctx.fillText(tituloText, 240, 35);
             ctx.restore();
 
-            // Texto narrativo progresivo (Efecto mÃ¡quina de escribir)
+            // Texto narrativo progresivo (Efecto máquina de escribir)
             const textoCompleto = modoLeyenda ? TEXTO_VICTORIA_LEYENDA : TEXTO_VICTORIA_NORMAL;
             const ahora = Date.now();
             if (ahora - ultimoTickTextoVictoria > 30) { // 30ms por caracter
                 if (textoVictoriaIndex < textoCompleto.length) {
                     textoVictoriaIndex++;
                     ultimoTickTextoVictoria = ahora;
-                    // Sonar un pequeÃ±o click al escribir ocasionalmente
+                    // Sonar un pequeño click al escribir ocasionalmente
                     if (textoVictoriaIndex % 3 === 0) {
                         sistemaAudio.sfx('hover');
                     }
@@ -5394,17 +5393,17 @@
             ctx.font = "5px 'Press Start 2P'";
             ctx.textAlign = "center"; // Centrar el texto en lugar de dejarlo al costado
 
-            // Envoltura o ajuste de texto (word-wrap) para el canvas con ancho mÃ¡ximo de 420px
+            // Envoltura o ajuste de texto (word-wrap) para el canvas con ancho máximo de 420px
             const lineasParrafos = textoMostrado.split("\n");
-            let yCursor = 55; // Inicio del texto narrativo tras el tÃ­tulo
+            let yCursor = 55; // Inicio del texto narrativo tras el título
             const maxAnchoTexto = 420;
 
             lineasParrafos.forEach(parrafo => {
                 if (parrafo.trim() === "") {
-                    yCursor += 6; // Espacio entre pÃ¡rrafos vacÃ­os
+                    yCursor += 6; // Espacio entre párrafos vacíos
                     return;
                 }
-                // Ajustamos la lÃ­nea si excede maxAnchoTexto
+                // Ajustamos la línea si excede maxAnchoTexto
                 const palabras = parrafo.split(" ");
                 let lineaActual = "";
 
@@ -5425,7 +5424,7 @@
                 }
             });
 
-            // BotÃ³n de Volver al MenÃº Principal (solo si ya se terminÃ³ de escribir el texto)
+            // Botón de Volver al Menú Principal (solo si ya se terminó de escribir el texto)
             if (textoVictoriaIndex >= textoCompleto.length) {
                 const btn = { x: 165, y: 250, w: 150, h: 22 };
                 const hover = esCursorSobreBoton(btn.x, btn.y, btn.w, btn.h);
@@ -5457,15 +5456,15 @@
             partidaIniciada = true;
             document.getElementById("menu-ui").style.display = "none";
 
-            // Solicitar pantalla completa en mÃ³viles (oculta barras del navegador temporalmente)
+            // Solicitar pantalla completa en móviles (oculta barras del navegador temporalmente)
             const docElm = document.documentElement;
             if (docElm.requestFullscreen) {
-                docElm.requestFullscreen().catch(err => console.log("Pantalla completa no permitida aÃºn."));
+                docElm.requestFullscreen().catch(err => console.log("Pantalla completa no permitida aún."));
             } else if (docElm.webkitRequestFullscreen) { /* Safari */
                 docElm.webkitRequestFullscreen();
             }
 
-            // Ocultamos el menÃº y mostramos el canvas
+            // Ocultamos el menú y mostramos el canvas
             menuUi.style.display = 'none';
             canvas.style.display = 'block';
             document.getElementById('hud-ui').style.display = 'none'; // El HUD se activa cuando llegamos al mapa
@@ -5488,7 +5487,7 @@
         }
 
         function avanzarCutscene() {
-            // Si el texto no terminÃ³ de escribirse, lo mostramos completo de golpe
+            // Si el texto no terminó de escribirse, lo mostramos completo de golpe
             const slide = CUTSCENE_SLIDES[cutsceneSlideActual];
             const textoCompleto = slide.texto;
             if (cutsceneCharIndex < textoCompleto.length || cutsceneTituloIndex < slide.titulo.length) {
@@ -5504,7 +5503,7 @@
 
             if (cutsceneSlideActual >= CUTSCENE_SLIDES.length) {
                 if (cutsceneOnEnd) {
-                    // CinemÃ¡tica de transiciÃ³n entre actos
+                    // Cinemática de transición entre actos
                     const cb = cutsceneOnEnd;
                     cutsceneOnEnd = null;
                     cb();
@@ -5532,7 +5531,7 @@
             estadoActual = ESTADOS.CAMPAMENTO;
         }
 
-        // PartÃ­culas de la fogata (chispas)
+        // Partículas de la fogata (chispas)
         let chispasCampamento = [];
 
         function dibujarPantallaCampamento() {
@@ -5544,7 +5543,7 @@
             ctx.fillStyle = gradiente;
             ctx.fillRect(0, 0, 480, 270);
 
-            // Dibujar imagen de fondo si estÃ¡ disponible (DinÃ¡mico segÃºn el nodo)
+            // Dibujar imagen de fondo si está disponible (Dinámico según el nodo)
             const claveFondoCamp = `camp_bg_${actoActual}_${nodoActualIndex}`;
             const claveFondoOriginal = `camp_bg_${nodoActualIndex}`;
             const fondoCampamento = imagenesCargadas.fondos && (imagenesCargadas.fondos[claveFondoCamp] || imagenesCargadas.fondos[claveFondoOriginal] || imagenesCargadas.fondos.campamento);
@@ -5562,7 +5561,7 @@
                 ctx.fillRect(star.x, star.y, star.size, star.size);
             });
 
-            // 3. Dibujar silueta de montaÃ±as lejanas y suelo SOLO si no hay una imagen de fondo activa
+            // 3. Dibujar silueta de montañas lejanas y suelo SOLO si no hay una imagen de fondo activa
             if (!fondoCampamento || !fondoCampamento.complete || fondoCampamento.naturalWidth === 0) {
                 ctx.fillStyle = "#0c0d17";
                 ctx.beginPath();
@@ -5605,7 +5604,7 @@
                 ctx.fillRect(fx - 10, fy - 2, 20, 5);
             }
 
-            // Dibujar llamas de la fogata (TriÃ¡ngulos/Elipses dinÃ¡micas) (Solo si no hay fondo de imagen)
+            // Dibujar llamas de la fogata (Triángulos/Elipses dinámicas) (Solo si no hay fondo de imagen)
             if (!fondoCampamento || !fondoCampamento.complete || fondoCampamento.naturalWidth === 0) {
                 ctx.save();
                 ctx.globalCompositeOperation = "screen";
@@ -5668,10 +5667,10 @@
 
             // 5. Dibujar a Mamani al lado de la fogata (x = 320, y = 175) (Solo si no hay fondo de imagen)
             if (!fondoCampamento || !fondoCampamento.complete || fondoCampamento.naturalWidth === 0) {
-                // Usamos el sprite si estÃ¡ cargado
+                // Usamos el sprite si está cargado
                 const spriteMamani = imagenesCargadas.personajes && imagenesCargadas.personajes.mamani;
                 if (spriteMamani && spriteMamani.complete && spriteMamani.naturalWidth !== 0) {
-                    // Sentado o de pie al lado de la fogata, con un ligero vaivÃ©n de respiraciÃ³n
+                    // Sentado o de pie al lado de la fogata, con un ligero vaivén de respiración
                     const vaivenY = Math.sin(ahora * 0.003) * 1.5;
                     ctx.drawImage(spriteMamani, 310, 115 + vaivenY, 50, 60);
                 } else {
@@ -5694,7 +5693,7 @@
                 ctx.fill();
             }
 
-            // 6. DATOS TEMÃTICOS DEL CAMPAMENTO segÃºn nodo
+            // 6. DATOS TEMÁTICOS DEL CAMPAMENTO según nodo
             const nodoCamp = nodosMapa[nodoActualIndex];
             const datosCampBase = {
                 1: {
@@ -5708,7 +5707,7 @@
                     },
                     6: {
                         titulo: "CAMPAMENTO EN LA POZA",
-                        subtitulo: "Un claro en el pantano, rodeado de lianas y el kurÃ©.",
+                        subtitulo: "Un claro en el pantano, rodeado de lianas y el kuré.",
                         op1titulo: "1. DORMIR EN LA HAMACA",
                         op1desc: "Recuperas 35% HP en la hamaca.",
                         op2titulo: "2. MEDICINA YURA",
@@ -5744,7 +5743,7 @@
                 op2desc: "Aumenta +10 a tu HP Maximo."
             };
 
-            // Panel oscuro detrÃ¡s de textos si hay imagen de fondo
+            // Panel oscuro detrás de textos si hay imagen de fondo
             const tieneBgCamp = fondoCampamento && fondoCampamento.complete && fondoCampamento.naturalWidth !== 0;
             if (tieneBgCamp) {
                 ctx.fillStyle = "rgba(5, 5, 15, 0.72)";
@@ -5754,7 +5753,7 @@
                 ctx.fill();
             }
 
-            // TÃ­tulo del campamento (con contorno)
+            // Título del campamento (con contorno)
             ctx.strokeStyle = "#000000";
             ctx.lineWidth = 2.5;
             ctx.lineJoin = "round";
@@ -5780,21 +5779,21 @@
             // 7. BOTONES E INTERFAZ DE OPCIONES
             const opt = UI_CONFIG.campamento;
 
-            // OpciÃ³n 1: Descansar
+            // Opción 1: Descansar
             dibujarOpcionCampamento(
                 opt.opcion1.x, opt.opcion1.y, opt.opcionAncho, opt.opcionAlto,
                 datosCamp.op1titulo, datosCamp.op1desc,
                 campamentoAccionRealizada
             );
 
-            // OpciÃ³n 2: Meditar
+            // Opción 2: Meditar
             dibujarOpcionCampamento(
                 opt.opcion2.x, opt.opcion2.y, opt.opcionAncho, opt.opcionAlto,
                 datosCamp.op2titulo, datosCamp.op2desc,
                 campamentoAccionRealizada
             );
 
-            // OpciÃ³n 3: Volver al Mapa (Siempre disponible)
+            // Opción 3: Volver al Mapa (Siempre disponible)
             const volver = opt.volverMapa;
             const hoverVolver = esCursorSobreBoton(volver.x, volver.y, volver.w, volver.h);
             let vy = volver.y;
@@ -5884,7 +5883,7 @@
             tutorialPasoActual++;
             tutorialAutoStart = performance.now();
             if (tutorialPasoActual >= TUTORIAL_PASOS.length) {
-                // Tutorial completado â†’ ir al mapa real
+                // Tutorial completado → ir al mapa real
                 tutorialCompletado = true;
                 localStorage.setItem('sendaMamani_tutorial', 'true');
                 enModoTutorial = false;
@@ -5901,9 +5900,9 @@
         }
 
         // ---------------------------------------------------
-        // Escala el canvas al tamaÃ±o fÃ­sico real de la pantalla
+        // Escala el canvas al tamaño físico real de la pantalla
         // (sin depender de image-rendering, que no funciona
-        //  de forma consistente en todos los navegadores mÃ³viles)
+        //  de forma consistente en todos los navegadores móviles)
         // ---------------------------------------------------
         function aplicarEscalaCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -5911,7 +5910,7 @@
             const cssW = cont.clientWidth;
             const cssH = cont.clientHeight;
 
-            if (!cssW || !cssH) return; // todavÃ­a no hay dimensiones
+            if (!cssW || !cssH) return; // todavía no hay dimensiones
 
             const phW = Math.round(cssW * dpr);
             const phH = Math.round(cssH * dpr);
@@ -5919,12 +5918,12 @@
             // Solo redibujamos si algo cambio (evita reset innecesario)
             if (canvas.width === phW && canvas.height === phH) return;
 
-            // Asignar tamaÃ±o fÃ­sico al canvas
+            // Asignar tamaño físico al canvas
             canvas.width = phW;
             canvas.height = phH;
 
-            // Escalar el contexto para que el cÃ³digo de dibujo
-            // siga usando las coordenadas lÃ³gicas 480Ã—270
+            // Escalar el contexto para que el código de dibujo
+            // siga usando las coordenadas lógicas 480×270
             ctx.scale(phW / 480, phH / 270);
 
             // Desactivar suavizado bilineal
@@ -5937,7 +5936,7 @@
         function abrirMenuPausa() {
             sistemaAudio.sfx('click');
             document.getElementById('pause-menu-ui').style.display = 'flex';
-            document.getElementById('hud-ui').style.display = 'none'; // Oculta los textos y el botÃ³n "MENÃš" de fondo
+            document.getElementById('hud-ui').style.display = 'none'; // Oculta los textos y el botón "MENÚ" de fondo
 
             // Deshabilitar botones de Bolsa y Mazos durante el combate
             const btnBolsa = document.getElementById('btn-pause-bolsa');
@@ -5969,10 +5968,10 @@
 
             const container = document.getElementById('stats-container');
             container.innerHTML = `
-                <div><span style="color:#e74c3c">â¤ Vitalidad:</span> Nivel ${jugador.pasivas.vitalidad}</div>
-                <div><span style="color:#f1c40f">âš¡ EnergÃ­a:</span> Nivel ${jugador.pasivas.energia}</div>
-                <div><span style="color:#3498db">ðŸ›¡ï¸ Defensa:</span> Nivel ${jugador.pasivas.defensa}</div>
-                <div><span style="color:#e67e22">âš”ï¸ Fuerza:</span> Nivel ${jugador.pasivas.fuerza}</div>
+                <div><span style="color:#e74c3c">❤ Vitalidad:</span> Nivel ${jugador.pasivas.vitalidad}</div>
+                <div><span style="color:#f1c40f">⚡ Energía:</span> Nivel ${jugador.pasivas.energia}</div>
+                <div><span style="color:#3498db">🛡️ Defensa:</span> Nivel ${jugador.pasivas.defensa}</div>
+                <div><span style="color:#e67e22">⚔️ Fuerza:</span> Nivel ${jugador.pasivas.fuerza}</div>
             `;
         }
 
@@ -6059,7 +6058,7 @@
                         if (cat === 'elemental') iconKey = 'fuego';
                         imgSrc = ASSETS.cartas[iconKey];
                     }
-                    let imgHtml = imgSrc ? `<img src="${imgSrc}" style="width: 2.5vw; height: 2.5vw; image-rendering: pixelated; margin-bottom: 0.5vw;">` : `<div style="font-size: 2.5vw; margin-bottom: 1vw;">${item.icono || 'ðŸƒ'}</div>`;
+                    let imgHtml = imgSrc ? `<img src="${imgSrc}" style="width: 2.5vw; height: 2.5vw; image-rendering: pixelated; margin-bottom: 0.5vw;">` : `<div style="font-size: 2.5vw; margin-bottom: 1vw;">${item.icono || '🃏'}</div>`;
                     
                     inner += `
                         ${imgHtml}
@@ -6067,7 +6066,7 @@
                         <div style="font-size: 0.55vw; color: #aaa; text-align: center;">${item.descripcion}</div>
                     `;
                 } else {
-                    inner += `<div style="color: #666; font-size: 0.8vw; text-align: center; margin-top: 3vw;">(VacÃ­o)</div>`;
+                    inner += `<div style="color: #666; font-size: 0.8vw; text-align: center; margin-top: 3vw;">(Vacío)</div>`;
                 }
 
                 containerActivos.innerHTML += `
@@ -6079,7 +6078,7 @@
             });
 
             if (!jugador.coleccionCartas || jugador.coleccionCartas.length === 0) {
-                containerColeccion.innerHTML = '<div style="color: #999; font-size: 1vw;">No tienes cartas en tu colecciÃ³n.</div>';
+                containerColeccion.innerHTML = '<div style="color: #999; font-size: 1vw;">No tienes cartas en tu colección.</div>';
             } else {
                 jugador.coleccionCartas.forEach((carta, idx) => {
                     const cInfo = cats.find(c => c.id === carta.categoria);
@@ -6095,7 +6094,7 @@
                         if (cat === 'elemental') iconKey = 'fuego';
                         imgSrcC = ASSETS.cartas[iconKey];
                     }
-                    let imgHtmlC = imgSrcC ? `<img src="${imgSrcC}" style="width: 2vw; height: 2vw; image-rendering: pixelated; margin-bottom: 0.5vw;">` : `<div style="font-size: 1.8vw; margin-bottom: 0.5vw;">${carta.icono || 'ðŸƒ'}</div>`;
+                    let imgHtmlC = imgSrcC ? `<img src="${imgSrcC}" style="width: 2vw; height: 2vw; image-rendering: pixelated; margin-bottom: 0.5vw;">` : `<div style="font-size: 1.8vw; margin-bottom: 0.5vw;">${carta.icono || '🃏'}</div>`;
 
                     containerColeccion.innerHTML += `
                         <div draggable="true" ondragstart="dragMazo(event, ${idx})"
@@ -6147,7 +6146,7 @@
                 } else {
                     slotsContainer.innerHTML += `
                         <div style="width: 8vw; height: 10vw; background: rgba(255,255,255,0.05); border: 2px dashed #666; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8vw;">
-                            VacÃ­o
+                            Vacío
                         </div>
                     `;
                 }
@@ -6156,7 +6155,7 @@
             const invContainer = document.getElementById('equipo-inventario');
             invContainer.innerHTML = '';
             if (jugador.inventario.length === 0) {
-                invContainer.innerHTML = '<div style="color: #999; font-size: 1vw;">Tu mochila estÃ¡ vacÃ­a.</div>';
+                invContainer.innerHTML = '<div style="color: #999; font-size: 1vw;">Tu mochila está vacía.</div>';
             } else {
                 jugador.inventario.forEach((item, index) => {
                     invContainer.innerHTML += `
@@ -6178,7 +6177,7 @@
                 renderizarEquipoUI();
             } else {
                 sistemaAudio.sfx('error');
-                mostrarToast("Â¡Slots Llenos!", "Desequipa un objeto primero", "error");
+                mostrarToast("¡Slots Llenos!", "Desequipa un objeto primero", "error");
             }
         }
 
@@ -6192,7 +6191,7 @@
             }
         }
 
-        // Detecta orientaciÃ³n del dispositivo y muestra la pantalla de rotaciÃ³n si estÃ¡ en vertical
+        // Detecta orientación del dispositivo y muestra la pantalla de rotación si está en vertical
         function verificarOrientacion() {
             const enVertical = window.innerHeight > window.innerWidth;
             const pantalla = document.getElementById('rotate-screen');
@@ -6205,19 +6204,19 @@
             }
         });
         window.addEventListener('orientationchange', function () {
-            // PequeÃ±o delay porque iOS tarda en actualizar innerWidth/Height
+            // Pequeño delay porque iOS tarda en actualizar innerWidth/Height
             setTimeout(function () {
                 verificarOrientacion();
                 // Redibujar canvas con las nuevas dimensiones al girar
                 if (estadoActual !== ESTADOS.MENU) aplicarEscalaCanvas();
             }, 300);
         });
-        verificarOrientacion(); // ComprobaciÃ³n inicial al cargar
+        verificarOrientacion(); // Comprobación inicial al cargar
 
         // Permite al jugador abandonar el combate y volver al mapa
         function volverAlMapa() {
             mostrarConfirmacion(
-                "Â¿Abandonar el combate?",
+                "¿Abandonar el combate?",
                 "El combate se reinicia al volver",
                 function () {
                     jugador.ap = jugador.apMax;
@@ -6229,10 +6228,10 @@
             );
         }
         // ==========================================
-        // FUNCIONES DE MENÃš PRINCIPAL (BOTONES EXTRAS)
+        // FUNCIONES DE MENÚ PRINCIPAL (BOTONES EXTRAS)
         // ==========================================
 
-        // Muestra la pantalla de CrÃ©ditos
+        // Muestra la pantalla de Créditos
         function mostrarCreditos() {
             // Usamos la variable global menuUi (ya declarada arriba) en lugar de redeclararla
             const creditosUi = document.getElementById('creditos-ui');
@@ -6241,7 +6240,7 @@
             if (creditosUi) creditosUi.style.display = 'flex';
         }
 
-        // Cierra los crÃ©ditos y vuelve al menÃº principal
+        // Cierra los créditos y vuelve al menú principal
         function cerrarCreditos() {
             const menuUi = document.getElementById('menu-ui');
             const creditosUi = document.getElementById('creditos-ui');
@@ -6250,7 +6249,7 @@
             if (menuUi) menuUi.style.display = 'flex';
         }
 
-        // Nota: El HUD se actualiza dinÃ¡micamente dentro de dibujarPantallaMapa() en cada frame.
+        // Nota: El HUD se actualiza dinámicamente dentro de dibujarPantallaMapa() en cada frame.
 
         // Eventos de teclado temporales para que pruebes las transiciones en tu PC
         window.addEventListener('keydown', (e) => {
@@ -6264,10 +6263,10 @@
         });
 
         /* ==========================================================================
-        10.5. LÃ“GICA DE INTERACCIÃ“N CON CARTAS (NUEVO)
+        10.5. LÓGICA DE INTERACCIÓN CON CARTAS (NUEVO)
         ========================================================================== */
 
-        // Dimensiones y posiciones idÃ©nticas a las que usamos para dibujar las cartas
+        // Dimensiones y posiciones idénticas a las que usamos para dibujar las cartas
         const CARTA_W = 55;
         const CARTA_H = 75;
         const CARTA_Y = 180;
@@ -6278,29 +6277,29 @@
 
         function usarItem(index) {
             let item = jugador.slotsCombate[index];
-            sistemaAudio.sfx('curacion'); // Sonido genÃ©rico
+            sistemaAudio.sfx('curacion'); // Sonido genérico
 
-            // PequeÃ±a animaciÃ³n visual del jugador al usar Ã­tem
+            // Pequeña animación visual del jugador al usar ítem
             activarAnimacion('jugador', 'ataque', { cat: 'mejora' });
 
-            // â”€â”€ CURACIÃ“N DE VIDA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── CURACIÓN DE VIDA ──────────────────────────────────────────────────
             if (["saltena", "majadito", "chicha", "api", "lluchu", "locoto", "quinua"].includes(item.id)) {
                 const cura = { saltena: 25, majadito: 25, chicha: 30, api: 25, lluchu: 35, locoto: 30, quinua: 35 }[item.id] || 25;
                 jugador.hp = Math.min(jugador.hpMax, jugador.hp + cura);
                 animaciones.textosFlotantes.push({ x: 80, y: 100, texto: `+${cura} HP`, color: "#2ecc71", vida: 60, maxVida: 60 });
 
-            } else if (["castana", "chuÃ±o"].includes(item.id)) {
-                const cura = { castana: 20, chuÃ±o: 20 }[item.id] || 20;
+            } else if (["castana", "chuño"].includes(item.id)) {
+                const cura = { castana: 20, chuño: 20 }[item.id] || 20;
                 jugador.hp = Math.min(jugador.hpMax, jugador.hp + cura);
                 animaciones.textosFlotantes.push({ x: 80, y: 100, texto: `+${cura} HP`, color: "#2ecc71", vida: 60, maxVida: 60 });
 
-                // â”€â”€ ESCUDO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── ESCUDO ────────────────────────────────────────────────────────────
             } else if (["bicarbonato", "copaiba", "aceiteselva", "plata", "cuero", "hoja", "aymara", "sal"].includes(item.id)) {
                 const escudoVal = { bicarbonato: 15, copaiba: 15, aceiteselva: 15, plata: 20, cuero: 18, hoja: 25, aymara: 22, sal: 28 }[item.id] || 15;
                 jugador.escudo += escudoVal;
                 animaciones.textosFlotantes.push({ x: 80, y: 100, texto: `+${escudoVal} Escudo`, color: "#3498db", vida: 60, maxVida: 60 });
 
-                // â”€â”€ DAÃ‘O AL ENEMIGO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── DAÑO AL ENEMIGO ───────────────────────────────────────────────────
             } else if (["cerbatana", "honda", "boleadora", "suri", "hacha"].includes(item.id)) {
                 sistemaAudio.sfx('danoEnemigo');
                 const danoVal = { cerbatana: 35, honda: 40, boleadora: 45, suri: 42, hacha: 50 }[item.id] || 35;
@@ -6312,7 +6311,7 @@
                 enemigo.hp = Math.max(0, enemigo.hp - 38);
                 activarAnimacion('enemigo', 'dano', { texto: '-38' });
 
-                // â”€â”€ CURA DE ESTADOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── CURA DE ESTADOS ───────────────────────────────────────────────────
             } else if (["alcohol", "unadegato", "resinaselva", "menta", "salvia", "incienso", "koa", "palo"].includes(item.id)) {
                 jugador.estado = null;
                 animaciones.textosFlotantes.push({ x: 80, y: 100, texto: "Purificado", color: "#1abc9c", vida: 60, maxVida: 60 });
@@ -6328,7 +6327,7 @@
             const carta = jugador.mano[categoria];
 
             if (!carta) {
-                console.log("Esta ranura de mazo estÃ¡ bloqueada.");
+                console.log("Esta ranura de mazo está bloqueada.");
                 return;
             }
             if (jugador.cartasUsadasEsteTurno && jugador.cartasUsadasEsteTurno[categoria]) {
@@ -6340,11 +6339,11 @@
                 return;
             }
             if (jugador.ap < carta.costoAP) {
-                console.log("Â¡No tienes suficiente AP para esta carta!");
+                console.log("¡No tienes suficiente AP para esta carta!");
                 return;
             }
 
-            // Aplicamos efectos segÃºn la categorÃ­a
+            // Aplicamos efectos según la categoría
             if (categoria === "ofensiva") {
                 let defensaEfectiva = enemigo.defensa;
                 let multiplicadorDano = 1.0;
@@ -6352,33 +6351,33 @@
                 if (enemigo.estado === "EMPAPADO") {
                     multiplicadorDano = 1.5;
                     enemigo.estado = null; // Se consume el efecto
-                    animaciones.textosFlotantes.push({ x: 360, y: 100, texto: "Â¡EMPAPADO! (+50% DaÃ±o)", color: "#3498db", vida: 60, maxVida: 60 });
+                    animaciones.textosFlotantes.push({ x: 360, y: 100, texto: "¡EMPAPADO! (+50% Daño)", color: "#3498db", vida: 60, maxVida: 60 });
                 }
 
-                // DaÃ±o fÃ­sico despuÃ©s de aplicar su reducciÃ³n por coraza y multiplicador
-                // Bonus de daÃ±o fijo del buff "Filo del Minero"
-                const danioBase = (carta.daÃ±o || 0) + (jugador.danioBonus || 0);
-                let daÃ±oNeto = Math.round(danioBase * (1 - defensaEfectiva) * multiplicadorDano);
+                // Daño físico después de aplicar su reducción por coraza y multiplicador
+                // Bonus de daño fijo del buff "Filo del Minero"
+                const danioBase = (carta.daño || 0) + (jugador.danioBonus || 0);
+                let dañoNeto = Math.round(danioBase * (1 - defensaEfectiva) * multiplicadorDano);
 
-                // NUEVO: AbsorciÃ³n de tu ataque por parte del escudo del enemigo
+                // NUEVO: Absorción de tu ataque por parte del escudo del enemigo
                 if (enemigo.escudo > 0) {
-                    if (enemigo.escudo >= daÃ±oNeto) {
-                        enemigo.escudo -= daÃ±oNeto;
-                        console.log("Â¡El enemigo bloqueÃ³ tu ataque con su escudo! Escudo restante: " + enemigo.escudo);
-                        daÃ±oNeto = 0;
+                    if (enemigo.escudo >= dañoNeto) {
+                        enemigo.escudo -= dañoNeto;
+                        console.log("¡El enemigo bloqueó tu ataque con su escudo! Escudo restante: " + enemigo.escudo);
+                        dañoNeto = 0;
                     } else {
-                        daÃ±oNeto -= enemigo.escudo;
-                        console.log("Â¡Rompiste el escudo del enemigo! Escudo absorbido: " + enemigo.escudo);
+                        dañoNeto -= enemigo.escudo;
+                        console.log("¡Rompiste el escudo del enemigo! Escudo absorbido: " + enemigo.escudo);
                         enemigo.escudo = 0;
                     }
                 }
 
-                if (daÃ±oNeto > 0) {
-                    enemigo.hp = Math.max(0, enemigo.hp - daÃ±oNeto);
-                    console.log("Â¡Mamani ataca! Hace " + daÃ±oNeto + " de daÃ±o directo.");
+                if (dañoNeto > 0) {
+                    enemigo.hp = Math.max(0, enemigo.hp - dañoNeto);
+                    console.log("¡Mamani ataca! Hace " + dañoNeto + " de daño directo.");
                     sistemaAudio.sfx('ataque');
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
-                    activarAnimacion('enemigo', 'dano', { texto: '-' + daÃ±oNeto });
+                    activarAnimacion('enemigo', 'dano', { texto: '-' + dañoNeto });
                 } else {
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
                     activarAnimacion('enemigo', 'dano', { texto: 'Bloqueado' });
@@ -6386,7 +6385,7 @@
             }
             else if (categoria === "defensiva") {
                 jugador.escudo += carta.bloqueo;
-                console.log("Â¡Mamani gana " + carta.bloqueo + " de Bloqueo!");
+                console.log("¡Mamani gana " + carta.bloqueo + " de Bloqueo!");
                 sistemaAudio.sfx('escudo');
                 activarAnimacion('jugador', 'escudo', { texto: '+' + carta.bloqueo });
             }
@@ -6394,28 +6393,28 @@
             else if (categoria === "elemental") {
                 if (carta.efecto === "EMPAPADO") {
                     // Carta de agua: penetra coraza y aplica empapado
-                    const daÃ±oNeto = Math.round(carta.daÃ±o * (1 - 0.20));
-                    enemigo.hp = Math.max(0, enemigo.hp - daÃ±oNeto);
+                    const dañoNeto = Math.round(carta.daño * (1 - 0.20));
+                    enemigo.hp = Math.max(0, enemigo.hp - dañoNeto);
                     enemigo.estado = "EMPAPADO";
-                    console.log("Â¡Magia AcuÃ¡tica! " + enemigo.nombre + " recibe " + daÃ±oNeto + " de daÃ±o y queda EMPAPADO.");
+                    console.log("¡Magia Acuática! " + enemigo.nombre + " recibe " + dañoNeto + " de daño y queda EMPAPADO.");
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
-                    activarAnimacion('enemigo', 'dano', { texto: '-' + daÃ±oNeto });
-                } else if (carta.daÃ±o > 0) {
+                    activarAnimacion('enemigo', 'dano', { texto: '-' + dañoNeto });
+                } else if (carta.daño > 0) {
                     // Cartas elementales de fuego/tierra sin estado especial
                     let multiplicadorDano = 1.0;
                     if (enemigo.estado === "EMPAPADO") {
                         multiplicadorDano = 1.5;
                         enemigo.estado = null; // Se consume el efecto
-                        animaciones.textosFlotantes.push({ x: 360, y: 100, texto: "Â¡EMPAPADO! (+50% DaÃ±o)", color: "#3498db", vida: 60, maxVida: 60 });
+                        animaciones.textosFlotantes.push({ x: 360, y: 100, texto: "¡EMPAPADO! (+50% Daño)", color: "#3498db", vida: 60, maxVida: 60 });
                     }
-                    const daÃ±oNeto = Math.round(carta.daÃ±o * (1 - 0.10) * multiplicadorDano);
-                    enemigo.hp = Math.max(0, enemigo.hp - daÃ±oNeto);
-                    console.log("Â¡Magia Elemental! " + enemigo.nombre + " recibe " + daÃ±oNeto + " de daÃ±o.");
+                    const dañoNeto = Math.round(carta.daño * (1 - 0.10) * multiplicadorDano);
+                    enemigo.hp = Math.max(0, enemigo.hp - dañoNeto);
+                    console.log("¡Magia Elemental! " + enemigo.nombre + " recibe " + dañoNeto + " de daño.");
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
-                    activarAnimacion('enemigo', 'dano', { texto: '-' + daÃ±oNeto });
+                    activarAnimacion('enemigo', 'dano', { texto: '-' + dañoNeto });
                 }
             }
-            // Cartas de Mejora (Hoja de Coca, Chicha Sagrada, BendiciÃ³n Yatiri)
+            // Cartas de Mejora (Hoja de Coca, Chicha Sagrada, Bendición Yatiri)
             else if (categoria === "nerfeo") {
                 if (carta.efecto === "DEBILITAR") {
                     enemigo.estado = "DEBILITADO";
@@ -6428,13 +6427,13 @@
             else if (categoria === "mejora") {
                 if (carta.efecto === "CURAR") {
                     jugador.hp = Math.min(jugador.hpMax, jugador.hp + carta.valor);
-                    console.log("Â¡Mamani se cura " + carta.valor + " HP!");
+                    console.log("¡Mamani se cura " + carta.valor + " HP!");
                     sistemaAudio.sfx('curacion');
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
                     activarAnimacion('jugador', 'escudo', { texto: '+' + carta.valor + 'HP' });
                 } else if (carta.efecto === "AP_BONUS") {
                     jugador.ap = Math.min(jugador.apMax + carta.valor, jugador.ap + carta.valor);
-                    console.log("Â¡Mamani gana " + carta.valor + " AP extra!");
+                    console.log("¡Mamani gana " + carta.valor + " AP extra!");
                     sistemaAudio.sfx('curacion');
                     // Animacion: la hoja de coca vuela a la boca de Mamani + aura verde
                     activarAnimacion('jugador', 'ataque', { cat: categoria });
@@ -6457,7 +6456,7 @@
                 jugador.cooldowns[carta.nombre] = carta.cooldown;
             }
 
-            // â”€â”€ AVANCE DEL TUTORIAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── AVANCE DEL TUTORIAL ────────────────────────────────────────────────
             if (enModoTutorial) {
                 const paso = TUTORIAL_PASOS[tutorialPasoActual];
                 if (paso && paso.accion === "JUGAR_OFENSIVA" && categoria === "ofensiva") {
@@ -6467,9 +6466,9 @@
                 }
             }
 
-            // CONDICIÃ“N DE VICTORIA
+            // CONDICIÓN DE VICTORIA
             if (enemigo.hp <= 0) {
-                // En tutorial la victoria muestra la pantalla de felicitaciÃ³n in-canvas
+                // En tutorial la victoria muestra la pantalla de felicitación in-canvas
                 if (enModoTutorial) {
                     enModoTutorial = false;
                     tutorialCompletado = true;
@@ -6492,7 +6491,7 @@
                     enemigo.escudo = 0;
                     enemigo.nombre = enemigo.nombre + " (Desatado)";
 
-                    console.log("Â¡El jefe entra en Fase 2!");
+                    console.log("¡El jefe entra en Fase 2!");
                     sistemaAudio.sfx('entrarCombate');
 
                     // Efecto visual de entrada a Fase 2
@@ -6502,7 +6501,7 @@
 
                     animaciones.textosFlotantes.push({
                         x: 240, y: 90,
-                        texto: "Â¡Â¡SEGUNDA FORMA!!",
+                        texto: "¡¡SEGUNDA FORMA!!",
                         color: "#ff0000",
                         vida: 150, maxVida: 150, escala: 1.8
                     });
@@ -6516,7 +6515,7 @@
                     // Volver a definir el siguiente movimiento de Fase 2
                     enemigo.definirSiguienteMovimiento();
 
-                    estadoActual = ESTADOS.COMBATE; // ContinÃºa el combate en Fase 2
+                    estadoActual = ESTADOS.COMBATE; // Continúa el combate en Fase 2
                     return;
                 }
 
@@ -6546,17 +6545,17 @@
             jugador.cartasUsadasEsteTurno = {};
 
             if (esRecompensaJefe) {
-                // Oro de jefe: entre 60G y 100G (mÃ¡s generoso)
+                // Oro de jefe: entre 60G y 100G (más generoso)
                 oroRecompensa = Math.floor(Math.random() * 41) + 60;
 
-                // â”€â”€ Reliquia de Jefe: carta directa al mazo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                // Elegir el pool segÃºn el acto actual
+                // ── Reliquia de Jefe: carta directa al mazo ─────────────────────
+                // Elegir el pool según el acto actual
                 let poolJefe = actoActual === 1 ? CARTAS_RECOMPENSA_JEFE_ACTO1
                     : actoActual === 2 ? CARTAS_RECOMPENSA_JEFE_ACTO2
                         : CARTAS_RECOMPENSA_JEFE_ACTO2;
 
                 // Buscar una carta que ocupe un slot bloqueado (null) del jugador
-                // Primero intentamos llenar slots vacÃ­os, luego hacemos upgrade
+                // Primero intentamos llenar slots vacíos, luego hacemos upgrade
                 let cartaJefe = null;
                 const slotsBloqueados = poolJefe.filter(c => jugador.mano[c.categoria] === null);
                 if (slotsBloqueados.length > 0) {
@@ -6566,7 +6565,7 @@
                     cartaJefe = poolJefe[Math.floor(Math.random() * poolJefe.length)];
                 }
 
-                // Agregar carta directamente a la colecciÃ³n (siempre) y equiparla en la mano activa
+                // Agregar carta directamente a la colección (siempre) y equiparla en la mano activa
                 if (cartaJefe) {
                     jugador.coleccionCartas.push({ ...cartaJefe });
                     if (cartaJefe.categoria) jugador.mano[cartaJefe.categoria] = { ...cartaJefe };
@@ -6580,7 +6579,7 @@
                 const poolApto = POOL_CARTAS_RECOMPENSA.filter(c =>
                     c.categoria !== 'elemental' || actoActual >= 2
                 );
-                // Barajamos y tomamos 3 Ãºnicas
+                // Barajamos y tomamos 3 únicas
                 const barajado = poolApto.sort(() => Math.random() - 0.5);
                 opcionesCartasRecompensa = barajado.slice(0, 3);
             }
@@ -6588,9 +6587,9 @@
             estadoActual = ESTADOS.RECOMPENSA;
         }
 
-        // Lanza una cinemÃ¡tica de transiciÃ³n entre actos.
+        // Lanza una cinemática de transición entre actos.
         // slides: array de diapositivas a mostrar.
-        // onEnd: funciÃ³n a ejecutar cuando terminen las diapositivas.
+        // onEnd: función a ejecutar cuando terminen las diapositivas.
         function iniciarCinematicaTransicion(slides, onEnd) {
             CUTSCENE_SLIDES = slides;
             cutsceneSlideActual = 0;
@@ -6602,7 +6601,7 @@
             estadoActual = ESTADOS.CUTSCENE;
         }
 
-        // Reinicia el mapa y gestiona la transiciÃ³n entre los 3 Actos de tu GDD
+        // Reinicia el mapa y gestiona la transición entre los 3 Actos de tu GDD
         function avanzarSiguienteActo() {
             if (actoActual === 3) {
                 // Victoria definitiva tras vencer al Jefe Final (Huiracocha)
@@ -6619,7 +6618,7 @@
                 textoVictoriaIndex = 0;
                 ultimoTickTextoVictoria = Date.now();
 
-                // Detener cualquier mÃºsica y pasar al estado de victoria total
+                // Detener cualquier música y pasar al estado de victoria total
                 sistemaAudio._detenerMusica(0.5);
                 sistemaAudio.sfx('confirmarEpico');
                 estadoActual = ESTADOS.VICTORIA_TOTAL;
@@ -6629,7 +6628,7 @@
             actoActual++;
 
             if (actoActual === 2) {
-                // Mostrar cinemÃ¡tica de transiciÃ³n Acto 1 â†’ 2 (Valles y Minas)
+                // Mostrar cinemática de transición Acto 1 → 2 (Valles y Minas)
                 iniciarCinematicaTransicion(CUTSCENE_SLIDES_ACTO2, function () {
                     reiniciarMapaParaNuevoActo();
                 });
@@ -6637,7 +6636,7 @@
             }
 
             if (actoActual === 3) {
-                // CinemÃ¡tica de transiciÃ³n Acto 2 â†’ 3 (Altiplano y Salar de Uyuni)
+                // Cinemática de transición Acto 2 → 3 (Altiplano y Salar de Uyuni)
                 iniciarCinematicaTransicion(CUTSCENE_SLIDES_ACTO3, function () {
                     reiniciarMapaParaNuevoActo();
                 });
@@ -6647,7 +6646,7 @@
 
         // Carga el mapa fresco del acto indicado y desbloquea los nodos iniciales
         function reiniciarMapaParaNuevoActo() {
-            // Cargar los nodos del nuevo acto (copia profunda para no mutar la definiciÃ³n base)
+            // Cargar los nodos del nuevo acto (copia profunda para no mutar la definición base)
             const plantillaNuevoActo = NODOS_POR_ACTO[actoActual];
             if (plantillaNuevoActo) {
                 nodosMapa = JSON.parse(JSON.stringify(plantillaNuevoActo));
@@ -6661,7 +6660,7 @@
             nodosMapa[0].completado = true;
             nodosMapa[0].disponible = false;
 
-            // Desbloquear los primeros nodos segÃºn las conexiones del nodo de inicio
+            // Desbloquear los primeros nodos según las conexiones del nodo de inicio
             if (nodosMapa[0].conexiones && nodosMapa[0].conexiones.length > 0) {
                 nodosMapa[0].conexiones.forEach(id => {
                     if (nodosMapa[id]) nodosMapa[id].disponible = true;
@@ -6675,11 +6674,11 @@
         }
 
 
-        // Ejecuta la acciÃ³n del enemigo y reinicia el turno de Mamani
+        // Ejecuta la acción del enemigo y reinicia el turno de Mamani
         function terminarTurno() {
             console.log("--- TURNO DEL ENEMIGO ---");
 
-            // â”€â”€ AVANCE DEL TUTORIAL (paso 3: terminar turno) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── AVANCE DEL TUTORIAL (paso 3: terminar turno) ────────────────────
             if (enModoTutorial) {
                 const paso = TUTORIAL_PASOS[tutorialPasoActual];
                 if (paso && paso.accion === "TERMINAR_TURNO") {
@@ -6708,96 +6707,96 @@
                 }
             }
 
-            // --- DAÃ‘O POR ESTADOS AL ENEMIGO AL INICIAR SU TURNO ---
+            // --- DAÑO POR ESTADOS AL ENEMIGO AL INICIAR SU TURNO ---
             if (enemigo.estado === "QUEMADURA") {
                 enemigo.hp = Math.max(0, enemigo.hp - 5);
                 animaciones.textosFlotantes.push({ x: 360, y: 100, texto: "-5 (Quemadura)", color: "#e67e22", vida: 60, maxVida: 60 });
-                sistemaAudio.sfx('danoJugador'); // Reutilizamos sonido de daÃ±o
+                sistemaAudio.sfx('danoJugador'); // Reutilizamos sonido de daño
             }
 
-            // 1. Ejecutar acciÃ³n del enemigo
+            // 1. Ejecutar acción del enemigo
             if (enemigo.intencion.tipo === "ATAQUE") {
-                const daÃ±oEnemigo = enemigo.intencion.valor;
+                const dañoEnemigo = enemigo.intencion.valor;
 
-                // LÃ³gica de absorciÃ³n por Escudo de Mamani
+                // Lógica de absorción por Escudo de Mamani
                 if (jugador.escudo > 0) {
-                    if (jugador.escudo >= daÃ±oEnemigo) {
-                        jugador.escudo -= daÃ±oEnemigo;
-                        console.log("Â¡Tu escudo absorbiÃ³ por completo los " + daÃ±oEnemigo + " de daÃ±o!");
+                    if (jugador.escudo >= dañoEnemigo) {
+                        jugador.escudo -= dañoEnemigo;
+                        console.log("¡Tu escudo absorbió por completo los " + dañoEnemigo + " de daño!");
                         sistemaAudio.sfx('escudo');
                         activarAnimacion('enemigo', 'ataque');
                         activarAnimacion('jugador', 'dano', { texto: 'Bloqueado' });
                     } else {
-                        const daÃ±oRestante = daÃ±oEnemigo - jugador.escudo;
+                        const dañoRestante = dañoEnemigo - jugador.escudo;
                         jugador.escudo = 0;
-                        jugador.hp = Math.max(0, jugador.hp - daÃ±oRestante);
-                        console.log("Tu escudo absorbiÃ³ parte del ataque. Recibes " + daÃ±oRestante + " de daÃ±o real.");
+                        jugador.hp = Math.max(0, jugador.hp - dañoRestante);
+                        console.log("Tu escudo absorbió parte del ataque. Recibes " + dañoRestante + " de daño real.");
                         sistemaAudio.sfx('danoJugador');
                         activarAnimacion('enemigo', 'ataque');
-                        activarAnimacion('jugador', 'dano', { texto: '-' + daÃ±oRestante });
+                        activarAnimacion('jugador', 'dano', { texto: '-' + dañoRestante });
                     }
                 } else {
-                    jugador.hp = Math.max(0, jugador.hp - daÃ±oEnemigo);
-                    console.log("Â¡El " + enemigo.nombre + " te ataca causando " + daÃ±oEnemigo + " de daÃ±o directo!");
+                    jugador.hp = Math.max(0, jugador.hp - dañoEnemigo);
+                    console.log("¡El " + enemigo.nombre + " te ataca causando " + dañoEnemigo + " de daño directo!");
                     sistemaAudio.sfx('danoJugador');
                     activarAnimacion('enemigo', 'ataque');
-                    activarAnimacion('jugador', 'dano', { texto: '-' + daÃ±oEnemigo });
+                    activarAnimacion('jugador', 'dano', { texto: '-' + dañoEnemigo });
                 }
             }
             else if (enemigo.intencion.tipo === "DEFENSA") {
                 // CORREGIDO: El enemigo gana escudo real en lugar de alterar su defensa base
                 enemigo.escudo = enemigo.intencion.valor;
-                console.log("Â¡El " + enemigo.nombre + " se protege con +" + enemigo.escudo + " de Escudo!");
+                console.log("¡El " + enemigo.nombre + " se protege con +" + enemigo.escudo + " de Escudo!");
                 sistemaAudio.sfx('escudo');
                 activarAnimacion('enemigo', 'escudo', { texto: '+' + enemigo.escudo });
             }
             else if (enemigo.intencion.tipo === "ROBO_SANGRE") {
-                const daÃ±oEnemigo = enemigo.intencion.valor;
-                let daÃ±oReal = 0;
+                const dañoEnemigo = enemigo.intencion.valor;
+                let dañoReal = 0;
 
                 if (jugador.escudo > 0) {
-                    if (jugador.escudo >= daÃ±oEnemigo) {
-                        jugador.escudo -= daÃ±oEnemigo;
+                    if (jugador.escudo >= dañoEnemigo) {
+                        jugador.escudo -= dañoEnemigo;
                         sistemaAudio.sfx('escudo');
                         activarAnimacion('enemigo', 'ataque');
                         activarAnimacion('jugador', 'dano', { texto: 'Bloqueado' });
                     } else {
-                        daÃ±oReal = daÃ±oEnemigo - jugador.escudo;
+                        dañoReal = dañoEnemigo - jugador.escudo;
                         jugador.escudo = 0;
-                        jugador.hp = Math.max(0, jugador.hp - daÃ±oReal);
+                        jugador.hp = Math.max(0, jugador.hp - dañoReal);
                         sistemaAudio.sfx('danoJugador');
                         activarAnimacion('enemigo', 'ataque');
-                        activarAnimacion('jugador', 'dano', { texto: '-' + daÃ±oReal });
+                        activarAnimacion('jugador', 'dano', { texto: '-' + dañoReal });
                     }
                 } else {
-                    daÃ±oReal = daÃ±oEnemigo;
-                    jugador.hp = Math.max(0, jugador.hp - daÃ±oReal);
+                    dañoReal = dañoEnemigo;
+                    jugador.hp = Math.max(0, jugador.hp - dañoReal);
                     sistemaAudio.sfx('danoJugador');
                     activarAnimacion('enemigo', 'ataque');
-                    activarAnimacion('jugador', 'dano', { texto: '-' + daÃ±oReal });
+                    activarAnimacion('jugador', 'dano', { texto: '-' + dañoReal });
                 }
 
-                if (daÃ±oReal > 0) {
-                    // El enemigo se cura el mismo daÃ±o que logrÃ³ hacerte (robo de vida)
-                    enemigo.hp = Math.min(enemigo.hpMax, enemigo.hp + daÃ±oReal);
+                if (dañoReal > 0) {
+                    // El enemigo se cura el mismo daño que logró hacerte (robo de vida)
+                    enemigo.hp = Math.min(enemigo.hpMax, enemigo.hp + dañoReal);
                     // Usamos timeout para que los numeritos no se sobrepongan
                     setTimeout(() => {
-                        activarAnimacion('enemigo', 'escudo', { texto: '+' + daÃ±oReal + ' HP' });
+                        activarAnimacion('enemigo', 'escudo', { texto: '+' + dañoReal + ' HP' });
                     }, 500);
                 }
             }
             else if (enemigo.intencion.tipo === "MALDICION") {
-                // MaldiciÃ³n: DaÃ±o mÃ¡gico que ignora tu escudo
-                const daÃ±oMaldicion = enemigo.intencion.valor || 8;
-                jugador.hp = Math.max(0, jugador.hp - daÃ±oMaldicion);
+                // Maldición: Daño mágico que ignora tu escudo
+                const dañoMaldicion = enemigo.intencion.valor || 8;
+                jugador.hp = Math.max(0, jugador.hp - dañoMaldicion);
                 sistemaAudio.sfx('danoJugador');
                 activarAnimacion('enemigo', 'ataque');
-                activarAnimacion('jugador', 'dano', { texto: '-' + daÃ±oMaldicion + ' (Penetrante)' });
+                activarAnimacion('jugador', 'dano', { texto: '-' + dañoMaldicion + ' (Penetrante)' });
             }
 
-            // 2. CondiciÃ³n de derrota
+            // 2. Condición de derrota
             if (jugador.hp <= 0) {
-                mostrarToast("Â¡DERROTA!", "Mamani ha caÃ­do en combate...", "error");
+                mostrarToast("¡DERROTA!", "Mamani ha caído en combate...", "error");
 
                 // Ocultamos el HUD para que la pantalla de Game Over se vea limpia
                 document.getElementById('hud-ui').style.display = 'none';
@@ -6821,7 +6820,7 @@
                 }
             }
 
-            // --- NUEVO: DAÃ‘O POR ESTADOS DE MAMANI AL INICIAR SU TURNO ---
+            // --- NUEVO: DAÑO POR ESTADOS DE MAMANI AL INICIAR SU TURNO ---
             if (jugador.estado === "sangrado") {
                 jugador.hp = Math.max(1, jugador.hp - 4); // Deja al menos 1 HP
                 animaciones.textosFlotantes.push({ x: 80, y: 90, texto: "-4 (Sangrado)", color: "#c0392b", vida: 60, maxVida: 60 });
@@ -6832,51 +6831,51 @@
                 sistemaAudio.sfx('danoJugador');
             }
 
-            console.log("--- TU TURNO --- Â¡AP restaurado!");
+            console.log("--- TU TURNO --- ¡AP restaurado!");
         }
 
-        // Evento de clic unificado (Pointer Event) para PC y MÃ³viles tÃ¡ctiles
-        // Evento de clic unificado (Pointer Event) para PC y MÃ³viles tÃ¡ctiles
+        // Evento de clic unificado (Pointer Event) para PC y Móviles táctiles
+        // Evento de clic unificado (Pointer Event) para PC y Móviles táctiles
         canvas.addEventListener('pointerdown', (e) => {
-            // Siempre mapeamos a coordenadas lÃ³gicas 480x270,
-            // independientemente del DPR fÃ­sico del canvas.
+            // Siempre mapeamos a coordenadas lógicas 480x270,
+            // independientemente del DPR físico del canvas.
             const rect = canvas.getBoundingClientRect();
             const clickX = (e.clientX - rect.left) * (480 / rect.width);
             const clickY = (e.clientY - rect.top) * (270 / rect.height);
 
 
-            // â”€â”€ Clic en BotÃ³n Mute (Siempre disponible fuera del menÃº) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── Clic en Botón Mute (Siempre disponible fuera del menú) ──────────
             if (estadoActual !== ESTADOS.MENU) {
                 if (clickX >= MUTE_BTN.x && clickX <= MUTE_BTN.x + MUTE_BTN.w &&
                     clickY >= MUTE_BTN.y && clickY <= MUTE_BTN.y + MUTE_BTN.h) {
                     sistemaAudio.inicializar();
                     sistemaAudio.toggleMute();
-                    return; // Detener propagaciÃ³n
+                    return; // Detener propagación
                 }
             }
 
             // ==========================================
-            // INTERCEPTOR: DIÃLOGO DE CONFIRMACIÃ“N ACTIVO
-            // Tiene prioridad mÃ¡xima sobre cualquier otro clic
+            // INTERCEPTOR: DIÁLOGO DE CONFIRMACIÓN ACTIVO
+            // Tiene prioridad máxima sobre cualquier otro clic
             // ==========================================
             if (confirmacionActual) {
                 const dw = 280, dh = 100;
                 const dx = (480 - dw) / 2; // 100
                 const dy = (270 - dh) / 2; // 85
 
-                // BotÃ³n ACEPTAR
+                // Botón ACEPTAR
                 const btnAx = dx + 18, btnAy = dy + 58, btnAw = 110, btnAh = 26;
-                // BotÃ³n CANCELAR
+                // Botón CANCELAR
                 const btnCx = dx + dw - 128, btnCy = dy + 58, btnCw = 110, btnCh = 26;
 
                 if (clickX >= btnAx && clickX <= btnAx + btnAw &&
                     clickY >= btnAy && clickY <= btnAy + btnAh) {
-                    // Ejecutar callback de aceptar y cerrar el diÃ¡logo
+                    // Ejecutar callback de aceptar y cerrar el diálogo
                     const cb = confirmacionActual.cbAceptar;
                     confirmacionActual = null;
                     if (cb) cb();
                 } else {
-                    // Cualquier otro clic (incluido CANCELAR) cierra el diÃ¡logo
+                    // Cualquier otro clic (incluido CANCELAR) cierra el diálogo
                     const cbC = confirmacionActual.cbCancelar;
                     confirmacionActual = null;
                     if (cbC) cbC();
@@ -6903,7 +6902,7 @@
             }
 
             // ==========================================
-            // CLICS EN EL TUTORIAL â€” ValidaciÃ³n de pasos
+            // CLICS EN EL TUTORIAL — Validación de pasos
             // ==========================================
             if (estadoActual === ESTADOS.TUTORIAL) {
                 const paso = TUTORIAL_PASOS[tutorialPasoActual];
@@ -6914,10 +6913,10 @@
                     avanzarTutorial();
                 } else if (paso.tipo === "ACCION") {
                     // Sistema de doble toque en el tutorial
-                    // Usamos la posiciÃ³n real de la carta en el layout plano
+                    // Usamos la posición real de la carta en el layout plano
                     const cfgManoTut = UI_CONFIG.mano;
                     if (paso.accion === "JUGAR_OFENSIVA") {
-                        // Carta 0 (ofensiva): x=55, y=200 (o 182 si estÃ¡ levantada)
+                        // Carta 0 (ofensiva): x=55, y=200 (o 182 si está levantada)
                         const idxOfen = 0;
                         const xOfen = cfgManoTut.xInicial + idxOfen * (cfgManoTut.ancho + cfgManoTut.espacio);
                         const yOfen = (cartaSeleccionadaIndex === idxOfen) ? cfgManoTut.yBase - 18 : cfgManoTut.yBase;
@@ -6954,7 +6953,7 @@
                         }
                     }
                 } else if (paso.tipo === "LIBRE" || paso.accion === "DERROTAR_ENEMIGO") {
-                    // Paso libre: sistema de doble toque tambiÃ©n, posiciones planas
+                    // Paso libre: sistema de doble toque también, posiciones planas
                     const btnTerminar = UI_CONFIG.combate.terminarTurno;
                     if (clickX >= btnTerminar.x && clickX <= btnTerminar.x + btnTerminar.w && clickY >= btnTerminar.y && clickY <= btnTerminar.y + btnTerminar.h) {
                         cartaSeleccionadaIndex = null;
@@ -6990,14 +6989,14 @@
                         cartaSeleccionadaIndex = null;
                     }
                 }
-                return; // En tutorial siempre salimos aquÃ­ para no procesar combate normal
+                return; // En tutorial siempre salimos aquí para no procesar combate normal
             }
 
             // ==========================================
             // CLICS EN LA PANTALLA DE COMBATE
             // ==========================================
             if (estadoActual === ESTADOS.COMBATE) {
-                // --- BotÃ³n END TURN ---
+                // --- Botón END TURN ---
                 const btnTerminar = UI_CONFIG.combate.terminarTurno;
                 if (clickX >= btnTerminar.x && clickX <= btnTerminar.x + btnTerminar.w &&
                     clickY >= btnTerminar.y && clickY <= btnTerminar.y + btnTerminar.h) {
@@ -7006,7 +7005,7 @@
                     return;
                 }
 
-                // --- BotÃ³n HUIR ---
+                // --- Botón HUIR ---
                 const btnHuir = UI_CONFIG.combate.huir;
                 if (clickX >= btnHuir.x && clickX <= btnHuir.x + btnHuir.w &&
                     clickY >= btnHuir.y && clickY <= btnHuir.y + btnHuir.h) {
@@ -7023,7 +7022,7 @@
                         if (jugador.slotsCombate[i]) {
                             usarItem(i);
                         }
-                        return; // Termina el clic si tocÃ³ la bolsa
+                        return; // Termina el clic si tocó la bolsa
                     }
                 }
 
@@ -7036,15 +7035,15 @@
 
                 let cartaTocadaIndex = null;
 
-                // Detectar quÃ© carta fue tocada (posiciÃ³n PLANA, sin curva de abanico)
+                // Detectar qué carta fue tocada (posición PLANA, sin curva de abanico)
                 for (let i = 0; i < categories.length; i++) {
                     const xCarta = cfgMano.xInicial + i * (cfgMano.ancho + cfgMano.espacio);
-                    // La carta seleccionada estÃ¡ levantada 18px, las demÃ¡s en yBase
+                    // La carta seleccionada está levantada 18px, las demás en yBase
                     const yCarta = (cartaSeleccionadaIndex === i)
                         ? cfgMano.yBase - 18
                         : cfgMano.yBase;
 
-                    // Ãrea de toque generosa para celular (+4px en todos los lados)
+                    // Área de toque generosa para celular (+4px en todos los lados)
                     if (clickX >= xCarta - 4 && clickX <= xCarta + cfgMano.ancho + 4 &&
                         clickY >= yCarta - 4 && clickY <= yCarta + cfgMano.alto + 4) {
                         cartaTocadaIndex = i;
@@ -7057,19 +7056,19 @@
                     const cartaTocada = jugador.mano[catTocada];
 
                     if (cartaTocada === null) {
-                        // Carta vacÃ­a, deseleccionar todo
+                        // Carta vacía, deseleccionar todo
                         cartaSeleccionadaIndex = null;
                     } else if (cartaSeleccionadaIndex === cartaTocadaIndex) {
-                        // Â¡SEGUNDO TOQUE en la misma carta! â†’ Jugarla
+                        // ¡SEGUNDO TOQUE en la misma carta! → Jugarla
                         cartaSeleccionadaIndex = null;
                         jugarCarta(catTocada);
                     } else {
-                        // PRIMER TOQUE en esta carta â†’ Seleccionarla/levantarla
+                        // PRIMER TOQUE en esta carta → Seleccionarla/levantarla
                         cartaSeleccionadaIndex = cartaTocadaIndex;
-                        sistemaAudio.sfx('hover'); // PequeÃ±o sonido de selecciÃ³n
+                        sistemaAudio.sfx('hover'); // Pequeño sonido de selección
                     }
                 } else {
-                    // Toque fuera de todas las cartas â†’ Deseleccionar
+                    // Toque fuera de todas las cartas → Deseleccionar
                     cartaSeleccionadaIndex = null;
                 }
             }
@@ -7079,11 +7078,11 @@
             // ==========================================
             else if (estadoActual === ESTADOS.MAPA) {
                 nodosMapa.forEach((nodo, index) => {
-                    // Permitir interactuar con nodos disponibles o el nodo actual si no estÃ¡ completado (para reintentar)
+                    // Permitir interactuar con nodos disponibles o el nodo actual si no está completado (para reintentar)
                     const esReintento = (index === nodoActualIndex && !nodo.completado);
                     if (!nodo.disponible && !esReintento) return;
 
-                    // CÃ¡lculo de distancia matemÃ¡tica para detectar el clic en el nodo
+                    // Cálculo de distancia matemática para detectar el clic en el nodo
                     const distancia = Math.sqrt((clickX - nodo.x) ** 2 + (clickY - nodo.y) ** 2);
 
                     if (distancia <= 14) { // Rango ampliado de 14px para facilitar el clic/toque
@@ -7098,7 +7097,7 @@
                         // Habilitamos los siguientes nodos de la ruta
                         actualizarRutasDisponibles(index);
 
-                        // Ejecutamos la acciÃ³n segÃºn el tipo de nodo
+                        // Ejecutamos la acción según el tipo de nodo
                         if (nodo.tipo === "COMBATE" || nodo.tipo === "JEFE") {
                             sistemaAudio.sfx('entrarCombate');
                             enemigo.configurarEnemigo(nodo.tipo);
@@ -7126,7 +7125,7 @@
                                 jugador.reliquias.forEach(r => {
                                     if (r.efecto === "escudo_ini") {
                                         jugador.escudo += r.valor;
-                                        animaciones.textosFlotantes.push({ x: 180, y: 150, texto: "Â¡" + r.nombre + " (+" + r.valor + " ESCUDO)!", color: "#3498db", vida: 60, maxVida: 60 });
+                                        animaciones.textosFlotantes.push({ x: 180, y: 150, texto: "¡" + r.nombre + " (+" + r.valor + " ESCUDO)!", color: "#3498db", vida: 60, maxVida: 60 });
                                     }
                                 });
                                 // Buff "Piel del Jaguar" (bloqueoBase)
@@ -7158,7 +7157,7 @@
             // CLICS EN LA PANTALLA DE TIENDA (Nuevo sistema Andino)
             // ==========================================
             else if (estadoActual === ESTADOS.TIENDA) {
-                // 1. BotÃ³n SALIR
+                // 1. Botón SALIR
                 const btnVolver = UI_CONFIG.tienda.volverMapa;
                 if (clickX >= btnVolver.x && clickX <= btnVolver.x + btnVolver.w &&
                     clickY >= btnVolver.y && clickY <= btnVolver.y + btnVolver.h) {
@@ -7170,7 +7169,7 @@
                     return;
                 }
 
-                // 2. PestaÃ±as
+                // 2. Pestañas
                 let clicEnPestana = false;
                 UI_CONFIG.tienda.tabs.forEach(tab => {
                     if (clickX >= tab.x && clickX <= tab.x + tab.w &&
@@ -7183,7 +7182,7 @@
                 });
                 if (clicEnPestana) return;
 
-                // 3. BotÃ³n CAMBIAR (solo objetos/mazo)
+                // 3. Botón CAMBIAR (solo objetos/mazo)
                 if (pestanaTiendaActual !== 'pasivas') {
                     const bCamb = { x: 20, y: 204, w: 158, h: 24 };
                     if (clickX >= bCamb.x && clickX <= bCamb.x + bCamb.w &&
@@ -7193,16 +7192,16 @@
                             itemsTiendaActuales[pestanaTiendaActual] = generarItemsTienda(pestanaTiendaActual);
                             itemSeleccionadoTienda = null;
                             sistemaAudio.sfx('hover');
-                            mostrarToast("Renovado", "Nuevos artÃ­culos disponibles (-" + costoReemplazar + "G)", "compra");
+                            mostrarToast("Renovado", "Nuevos artículos disponibles (-" + costoReemplazar + "G)", "compra");
                         } else {
                             sistemaAudio.sfx('error');
-                            mostrarToast("Â¡Oro insuficiente!", "Necesitas " + costoReemplazar + "G para cambiar", "error");
+                            mostrarToast("¡Oro insuficiente!", "Necesitas " + costoReemplazar + "G para cambiar", "error");
                         }
                         return;
                     }
                 }
 
-                // 4. BotÃ³n COMPRAR
+                // 4. Botón COMPRAR
                 const bComp = { x: 302, y: 204, w: 158, h: 24 };
                 if (clickX >= bComp.x && clickX <= bComp.x + bComp.w &&
                     clickY >= bComp.y && clickY <= bComp.y + bComp.h) {
@@ -7213,13 +7212,13 @@
                         const bf = BUFFS_NIVELES.find(b => b.id === itemSeleccionadoTienda.buffId);
                         const nv = jugador.pasivas[itemSeleccionadoTienda.buffId] || 0;
                         if (!bf || nv >= bf.niveles.length) {
-                            mostrarToast("Nivel MÃ¡ximo", "Este buff ya estÃ¡ al mÃ¡ximo", "error");
+                            mostrarToast("Nivel Máximo", "Este buff ya está al máximo", "error");
                             return;
                         }
                         const nvDat = bf.niveles[nv];
                         if (jugador.oro < nvDat.costo) {
                             sistemaAudio.sfx('error');
-                            mostrarToast("Â¡Oro insuficiente!", "Necesitas " + nvDat.costo + "G", "error");
+                            mostrarToast("¡Oro insuficiente!", "Necesitas " + nvDat.costo + "G", "error");
                             return;
                         }
                         jugador.oro -= nvDat.costo;
@@ -7236,13 +7235,13 @@
                         } else if (nvDat.efecto === 'danio_bonus') {
                             jugador.danioBonus = (jugador.danioBonus || 0) + nvDat.valor;
                         }
-                        mostrarToast("Â¡" + bf.nombre + " Nv." + (nv + 1) + "!", nvDat.desc + " aplicado", "compra");
+                        mostrarToast("¡" + bf.nombre + " Nv." + (nv + 1) + "!", nvDat.desc + " aplicado", "compra");
                         itemSeleccionadoTienda = null;
 
                     } else if (pestanaTiendaActual === 'objetos') {
                         if (jugador.oro < itemSeleccionadoTienda.costo) {
                             sistemaAudio.sfx('error');
-                            mostrarToast("Â¡Oro insuficiente!", "No puedes pagar este artÃ­culo", "error");
+                            mostrarToast("¡Oro insuficiente!", "No puedes pagar este artículo", "error");
                             return;
                         }
                         const esInstantaneo = (itemSeleccionadoTienda.desc || '').includes("HP") || (itemSeleccionadoTienda.desc || '').includes("Vida");
@@ -7252,10 +7251,10 @@
                             let cur = parseInt((itemSeleccionadoTienda.desc || '').replace(/\D/g, '')) || 20;
                             if (modoLeyenda) cur = Math.round(cur * 0.7);
                             jugador.hp = Math.min(jugador.hpMax, jugador.hp + cur);
-                            mostrarToast("Â¡" + itemSeleccionadoTienda.nombre + "!", "Recuperas " + cur + " HP" + (modoLeyenda ? " (Leyenda -30%)" : ""), "compra");
+                            mostrarToast("¡" + itemSeleccionadoTienda.nombre + "!", "Recuperas " + cur + " HP" + (modoLeyenda ? " (Leyenda -30%)" : ""), "compra");
                         } else {
                             jugador.inventario.push({ ...itemSeleccionadoTienda });
-                            mostrarToast("Â¡Comprado!", itemSeleccionadoTienda.nombre + " en inventario", "compra");
+                            mostrarToast("¡Comprado!", itemSeleccionadoTienda.nombre + " en inventario", "compra");
                         }
                         // Quitar item comprado de las opciones
                         const idx = itemsTiendaActuales.objetos.findIndex(it => it.id === itemSeleccionadoTienda.id);
@@ -7265,7 +7264,7 @@
                     } else if (pestanaTiendaActual === 'mazo') {
                         if (jugador.oro < itemSeleccionadoTienda.costo) {
                             sistemaAudio.sfx('error');
-                            mostrarToast("Â¡Oro insuficiente!", "No puedes pagar esta carta", "error");
+                            mostrarToast("¡Oro insuficiente!", "No puedes pagar esta carta", "error");
                             return;
                         }
                         jugador.oro -= itemSeleccionadoTienda.costo;
@@ -7275,7 +7274,7 @@
                         if (cat) jugador.mano[cat] = { ...itemSeleccionadoTienda.carta };
                         const idxM = itemsTiendaActuales.mazo.findIndex(it => it.id === itemSeleccionadoTienda.id);
                         if (idxM !== -1) itemsTiendaActuales.mazo.splice(idxM, 1);
-                        mostrarToast("Â¡" + itemSeleccionadoTienda.nombre + " obtenida!", "AÃ±adida a tu colecciÃ³n", "compra");
+                        mostrarToast("¡" + itemSeleccionadoTienda.nombre + " obtenida!", "Añadida a tu colección", "compra");
                         itemSeleccionadoTienda = null;
                     }
                     return;
@@ -7326,9 +7325,9 @@
             else if (estadoActual === ESTADOS.RECOMPENSA) {
                 const cfgR = UI_CONFIG.recompensa;
 
-                // Detectar clic en botÃ³n Continuar (Omitir original)
+                // Detectar clic en botón Continuar (Omitir original)
                 const btnOmitir = cfgR.omitir;
-                // Coordenadas actualizadas para el botÃ³n centrado y bajado a y=160 (definido en dibujarPantallaRecompensa)
+                // Coordenadas actualizadas para el botón centrado y bajado a y=160 (definido en dibujarPantallaRecompensa)
                 const btnX = 240 - (btnOmitir.w / 2);
                 const btnY = esRecompensaJefe ? 200 : 160;
 
@@ -7336,7 +7335,7 @@
                     clickY >= btnY && clickY <= btnY + btnOmitir.h) {
 
                     sistemaAudio.sfx('recompensa');
-                    // AÃ±adir el oro
+                    // Añadir el oro
                     jugador.oro += oroRecompensa;
                     nodosMapa[nodoActualIndex].completado = true;
                     nodosMapa[nodoActualIndex].disponible = false;
@@ -7377,7 +7376,7 @@
                     estadoActual = ESTADOS.MAPA;
                 }
 
-                // OpciÃ³n 1
+                // Opción 1
                 if (clickX >= opcion1.x && clickX <= opcion1.x + w && clickY >= opcion1.y && clickY <= opcion1.y + h) {
                     const validar = eventoClick.valida1 ? eventoClick.valida1(jugador) : true;
                     if (validar) {
@@ -7387,11 +7386,11 @@
                         finalizarEventoNodo();
                     } else {
                         sistemaAudio.sfx('error');
-                        mostrarToast("Â¡No puedes!", eventoClick.msgError1 || "CondiciÃ³n no cumplida", "error");
+                        mostrarToast("¡No puedes!", eventoClick.msgError1 || "Condición no cumplida", "error");
                     }
                 }
 
-                // OpciÃ³n 2
+                // Opción 2
                 else if (opcion2 && clickX >= opcion2.x && clickX <= opcion2.x + w && clickY >= opcion2.y && clickY <= opcion2.y + h) {
                     const validar2 = eventoClick.valida2 ? eventoClick.valida2(jugador) : true;
                     if (validar2) {
@@ -7401,7 +7400,7 @@
                         finalizarEventoNodo();
                     } else {
                         sistemaAudio.sfx('error');
-                        mostrarToast("Â¡No puedes!", eventoClick.msgError2 || "CondiciÃ³n no cumplida", "error");
+                        mostrarToast("¡No puedes!", eventoClick.msgError2 || "Condición no cumplida", "error");
                     }
                 }
             }
@@ -7412,7 +7411,7 @@
             else if (estadoActual === ESTADOS.CAMPAMENTO) {
                 const opt = UI_CONFIG.campamento;
 
-                // 1. Detectar clic en el botÃ³n "VOLVER AL MAPA"
+                // 1. Detectar clic en el botón "VOLVER AL MAPA"
                 const btnVolver = opt.volverMapa;
                 if (clickX >= btnVolver.x && clickX <= btnVolver.x + btnVolver.w && clickY >= btnVolver.y && clickY <= btnVolver.y + btnVolver.h) {
                     sistemaAudio.sfx('retroceder');
@@ -7423,10 +7422,10 @@
                     return;
                 }
 
-                // Si ya realizamos una acciÃ³n en este campamento, no permitimos mÃ¡s clics
+                // Si ya realizamos una acción en este campamento, no permitimos más clics
                 if (campamentoAccionRealizada) return;
 
-                // 2. OpciÃ³n 1: Descansar
+                // 2. Opción 1: Descansar
                 if (clickX >= opt.opcion1.x && clickX <= opt.opcion1.x + opt.opcionAncho &&
                     clickY >= opt.opcion1.y && clickY <= opt.opcion1.y + opt.opcionAlto) {
 
@@ -7440,18 +7439,18 @@
                     jugador.hp = Math.min(jugador.hpMax, jugador.hp + curacion);
                     campamentoAccionRealizada = true;
                     sistemaAudio.sfx('descanso');
-                    mostrarToast("Â¡Descanso!", "Recuperas " + curacion + " HP" + (modoLeyenda ? " (PenalizaciÃ³n Leyenda)" : ""), "compra");
+                    mostrarToast("¡Descanso!", "Recuperas " + curacion + " HP" + (modoLeyenda ? " (Penalización Leyenda)" : ""), "compra");
                 }
 
-                // 3. OpciÃ³n 2: Meditar
+                // 3. Opción 2: Meditar
                 else if (clickX >= opt.opcion2.x && clickX <= opt.opcion2.x + opt.opcionAncho &&
                     clickY >= opt.opcion2.y && clickY <= opt.opcion2.y + opt.opcionAlto) {
 
                     jugador.hpMax += 10;
-                    jugador.hp += 10; // Cuidamos que tambiÃ©n aumente su hp actual en la misma cantidad
+                    jugador.hp += 10; // Cuidamos que también aumente su hp actual en la misma cantidad
                     campamentoAccionRealizada = true;
                     sistemaAudio.sfx('mejora');
-                    mostrarToast("Â¡MeditaciÃ³n!", "HP mÃ¡ximo +10 con hojas de coca", "compra");
+                    mostrarToast("¡Meditación!", "HP máximo +10 con hojas de coca", "compra");
                 }
             }
 
@@ -7459,10 +7458,10 @@
             // CLICS EN LA PANTALLA DE GAME OVER
             // ==========================================
             else if (estadoActual === ESTADOS.GAMEOVER) {
-                // Detectar clic en el botÃ³n "VOLVER A INTENTAR"
+                // Detectar clic en el botón "VOLVER A INTENTAR"
                 const btnReintentar = UI_CONFIG.gameOver.reintentar;
                 if (clickX >= btnReintentar.x && clickX <= btnReintentar.x + btnReintentar.w && clickY >= btnReintentar.y && clickY <= btnReintentar.y + btnReintentar.h) {
-                    // Recargamos la pÃ¡gina para reiniciar todo el juego desde cero
+                    // Recargamos la página para reiniciar todo el juego desde cero
                     location.reload();
                 }
             }
@@ -7471,12 +7470,12 @@
             // ==========================================
             else if (estadoActual === ESTADOS.VICTORIA_TOTAL) {
                 const textoCompleto = modoLeyenda ? TEXTO_VICTORIA_LEYENDA : TEXTO_VICTORIA_NORMAL;
-                // Solo permitimos hacer clic en el botÃ³n si el texto ya terminÃ³ de escribirse
+                // Solo permitimos hacer clic en el botón si el texto ya terminó de escribirse
                 if (textoVictoriaIndex >= textoCompleto.length) {
                     const btn = { x: 165, y: 250, w: 150, h: 22 };
                     if (clickX >= btn.x && clickX <= btn.x + btn.w && clickY >= btn.y && clickY <= btn.y + btn.h) {
                         sistemaAudio.sfx('retroceder');
-                        // Recargamos la pÃ¡gina para volver al menÃº de inicio limpio
+                        // Recargamos la página para volver al menú de inicio limpio
                         location.reload();
                     }
                 }
@@ -7488,7 +7487,7 @@
             mouseX = (e.clientX - rect.left) * (480 / rect.width);
             mouseY = (e.clientY - rect.top) * (270 / rect.height);
             // El hover del mouse ya NO levanta cartas.
-            // Solo actualiza mouseX/mouseY para el cursor y el tooltip de intenciÃ³n enemiga.
+            // Solo actualiza mouseX/mouseY para el cursor y el tooltip de intención enemiga.
         });
 
         // Limpia el efecto cuando el dedo o cursor sale del canvas
@@ -7517,21 +7516,21 @@
            11. ARRANQUE DEL JUEGO
            ========================================================================== */
 
-        // Vuelve al menÃº principal con confirmaciÃ³n del jugador
+        // Vuelve al menú principal con confirmación del jugador
         function volverAlMenuPrincipal() {
             document.getElementById('pause-menu-ui').style.display = 'none';
             mostrarConfirmacion(
-                "Â¿Volver al MenÃº?",
-                "Tu progreso se perderÃ¡",
+                "¿Volver al Menú?",
+                "Tu progreso se perderá",
                 function () { location.reload(); },
                 function () { document.getElementById('pause-menu-ui').style.display = 'flex'; }
             );
         }
 
         cargarGraficos(() => {
-            console.log("GrÃ¡ficos listos. Iniciando Game Loop...");
+            console.log("Gráficos listos. Iniciando Game Loop...");
 
-            // Deshabilitar botÃ³n de Senda de Leyenda si no hay victorias registradas
+            // Deshabilitar botón de Senda de Leyenda si no hay victorias registradas
             const btnLeyenda = document.getElementById('btn-leyenda');
             if (btnLeyenda) {
                 if (viajesCompletados === 0) {
@@ -7541,12 +7540,12 @@
             }
 
             // ==========================================
-            // CORRECCIÃ“N DE BORROSIDAD (Device Pixel Ratio)
+            // CORRECCIÓN DE BORROSIDAD (Device Pixel Ratio)
             // ==========================================
             // En pantallas de alta densidad (Retina, FHD+), el canvas debe tener
-            // tantos pÃ­xeles fÃ­sicos como la pantalla real para verse nÃ­tido.
+            // tantos píxeles físicos como la pantalla real para verse nítido.
             // Escalamos el canvas al DPR y ajustamos el contexto para que
-            // el cÃ³digo de dibujo siga usando las coordenadas lÃ³gicas 480x270.
+            // el código de dibujo siga usando las coordenadas lógicas 480x270.
             (function corregirBorrosidad() {
                 const dpr = window.devicePixelRatio || 1;
                 if (dpr > 1) {
@@ -7565,14 +7564,3 @@
         });
 
 
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado con exito!', reg))
-                    .catch(err => console.log('Fallo al registrar el Service Worker', err));
-            });
-        }
-    
